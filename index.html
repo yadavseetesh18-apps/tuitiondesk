@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TuitionDesk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Hind:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F6F4EE;--card:#FFFFFF;--ink:#1D2547;--mute:#6A6F85;--line:#E3E0D6;--accent:#23305E;--onaccent:#fff;--gold:#F0A21B;--green:#1E8E5A;--greenbg:#DDF1E6;--red:#C8452F;--redbg:#FBE4DE;--amber:#8A5A00;--amberbg:#FDF0D0;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141829;--card:#1D2238;--ink:#EEF0F8;--mute:#9AA0BA;--line:#2C3250;--accent:#F0A21B;--onaccent:#1D2547;--gold:#F0A21B;--green:#4FC48A;--greenbg:#173A2B;--red:#F08A74;--redbg:#44221B;--amber:#F0C36A;--amberbg:#3F3213}}
+:root[data-theme="dark"]{--bg:#141829;--card:#1D2238;--ink:#EEF0F8;--mute:#9AA0BA;--line:#2C3250;--accent:#F0A21B;--onaccent:#1D2547;--gold:#F0A21B;--green:#4FC48A;--greenbg:#173A2B;--red:#F08A74;--redbg:#44221B;--amber:#F0C36A;--amberbg:#3F3213}
+*{box-sizing:border-box;margin:0}
+html{color-scheme:light dark}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.45 Hind,system-ui,sans-serif;padding-bottom:calc(76px + env(safe-area-inset-bottom,0px));max-width:560px;margin:0 auto;min-height:100vh}
+h1,h2,h3,.num{font-family:'Bricolage Grotesque',Hind,system-ui,sans-serif;letter-spacing:-.01em}
+header{padding:16px 18px 6px;display:flex;justify-content:space-between;align-items:baseline}
+header h1{font-size:22px}header small{color:var(--mute);font-size:13px}
+main{padding:8px 16px 16px}
+h2{font-size:20px;margin:6px 0 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.hero{background:var(--accent);color:var(--onaccent);border:0}
+.hero .num{font-size:38px;line-height:1.1}
+.hero small{opacity:.8}
+.row{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.row+.row{border-top:1px solid var(--line);margin-top:10px;padding-top:10px}
+.mute{color:var(--mute);font-size:14px}
+.chip{display:inline-block;font-size:12.5px;font-weight:600;padding:2px 9px;border-radius:99px;background:var(--amberbg);color:var(--amber);white-space:nowrap}
+.chip.red{background:var(--redbg);color:var(--red)}.chip.green{background:var(--greenbg);color:var(--green)}
+button,.btn{font:600 16px Hind,sans-serif;border:0;border-radius:12px;padding:13px 16px;background:var(--accent);color:var(--onaccent);width:100%;cursor:pointer;text-decoration:none;display:block;text-align:center}
+button.small,.btn.small{width:auto;padding:7px 12px;font-size:14px;display:inline-block}
+.btn.wa{background:#1FA855;color:#fff}
+.btn.ghost,button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+button:focus-visible,.btn:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.pa{display:flex;gap:6px}
+.pa button{width:44px;height:44px;padding:0;border-radius:10px;background:transparent;color:var(--mute);border:1.5px solid var(--line)}
+.pa button.p.on{background:var(--green);border-color:var(--green);color:#fff}
+.pa button.a.on{background:var(--red);border-color:var(--red);color:#fff}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:6px}
+.chips button{width:auto;white-space:nowrap;padding:8px 14px;background:var(--card);color:var(--ink);border:1px solid var(--line);font-size:14.5px}
+.chips button.on{background:var(--accent);color:var(--onaccent);border-color:var(--accent)}
+.bars{display:flex;align-items:flex-end;gap:10px;height:150px;padding-top:8px}
+.bars div.c{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;font-size:12px;color:var(--mute)}
+.bars i{display:block;width:100%;border-radius:6px 6px 0 0;background:var(--line)}
+.bars .c.last i{background:var(--gold)}.bars b{font-size:13px;color:var(--ink);margin-bottom:3px}
+.split{display:flex;height:14px;border-radius:99px;overflow:hidden;background:var(--line);margin:10px 0 6px}
+.split i{display:block}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid .card{margin:0}.grid .num{font-size:28px}
+nav{position:fixed;bottom:0;left:0;right:0;max-width:560px;margin:0 auto;background:var(--card);border-top:1px solid var(--line);display:flex;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+nav button{flex:1;background:none;color:var(--mute);padding:9px 2px;font-size:13px;border-radius:10px;position:relative}
+nav button.on{color:var(--ink);font-weight:600}
+nav button.on::after{content:"";position:absolute;left:30%;right:30%;top:0;height:3px;border-radius:3px;background:var(--gold)}
+.sheetbg{position:fixed;inset:0;background:rgba(10,14,30,.5);display:none;align-items:flex-end;justify-content:center;z-index:20}
+.sheetbg.open{display:flex}
+.sheet{background:var(--bg);width:100%;max-width:560px;border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));max-height:80vh;overflow:auto}
+.sheet .row .btn{min-width:84px}.sent{opacity:.6}
+.prog{height:10px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:8px}.prog i{display:block;height:100%;background:var(--green)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(90px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:99px;font-size:14px;z-index:30;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+select{font:500 16px Hind,sans-serif;width:100%;padding:11px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);margin-bottom:12px}
+input,textarea{font:500 16px Hind,sans-serif;width:100%;padding:11px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);margin:4px 0 10px}
+input:focus-visible,textarea:focus-visible{outline:3px solid var(--gold);outline-offset:1px}
+.row label{margin:0}.row input{margin:0}
+</style>
+</head>
+<body>
+<header><h1>TuitionDesk</h1><small id="who"></small></header>
+<main id="main"></main>
+<nav id="nav"></nav>
+<div class="sheetbg" id="sbg"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+var NOW=new Date();NOW.setHours(0,0,0,0);
+var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],MAX=50,BATCH='Today’s batch';
+var DB=null,OWNER=false,S=[],ENQ=[],CFG={name:'',upi:'',collected:0},st={tab:'parent',att:{},sel:null,pv:null,pcode:''},READY=false,LOADED=false;
+var $=function(i){return document.getElementById(i)};
+function esc(t){return String(t==null?'':t).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function inr(n){return '₹'+Number(n||0).toLocaleString('en-IN')}
+function late(s){return s.due?Math.max(0,Math.round((NOW-new Date(s.due))/864e5)):0}
+function dfmt(s){var d=new Date(s);return d.getDate()+' '+MON[d.getMonth()]}
+function cname(){return CFG.name||'our tuition centre'}
+function wa(ph,msg){return 'https://wa.me/'+ph+'?text='+encodeURIComponent(msg)}
+function toast(t){var e=$('toast');e.textContent=t;e.className='toast show';setTimeout(function(){e.className='toast'},2400)}
+function sheet(title,html){$('sheet').innerHTML='<h2>'+title+'</h2>'+html+'<button class="ghost" style="margin-top:12px" onclick="closeSheet()">Close</button>';$('sbg').className='sheetbg open'}
+function closeSheet(){$('sbg').className='sheetbg'}
+$('sbg').addEventListener('click',function(e){if(e.target===this)closeSheet()});
+function go(t){st.tab=t;render()}
+function sentLink(el){el.parentNode.parentNode.classList.add('sent');el.textContent='Sent'}
+function pending(){return S.filter(function(s){return s.fee>0}).sort(function(a,b){return late(b)-late(a)})}
+function lastSc(s){return (s.sc||[]).length?s.sc[s.sc.length-1]:0}
+function rank(s){return S.slice().sort(function(a,b){return lastSc(b)-lastSc(a)}).map(function(x){return x.id}).indexOf(s.id)+1}
+function me(){var f=S.filter(function(s){return s.id===st.sel})[0];return f||S[0]}
+function newCode(){var c='ABCDEFGHJKMNPQRSTUVWXYZ23456789',o='';for(var i=0;i<6;i++)o+=c[Math.floor(Math.random()*c.length)];return o}
+function recOf(s){var r={};['n','par','ph','fee','due','att','sc','hw','code'].forEach(function(k){r[k]=s[k]});return r}
+function pvOf(s){return {n:s.n,att:s.att,sc:s.sc,hw:s.hw,fee:s.fee,due:s.due||'',upi:CFG.upi||'',centre:CFG.name||''}}
+function save(s){return Promise.all([DB.doc('students/'+s.id).set(recOf(s)),DB.doc('pv/'+s.code).set(pvOf(s))])}
+function fail(e){toast('Could not save. '+(e&&e.code==='quota_exceeded'?'Storage is full.':'Check your connection and try again.'))}
+function saveCfg(){return DB.doc('cfg/main').set(CFG)}
+
+/* Empty state */
+function empty(){return '<div class="card"><h3>No students yet</h3><p class="mute" style="margin:6px 0 12px">Add your first student, or load 10 sample students to try the app.</p><button onclick="addStudent()" style="margin-bottom:8px">Add student</button><button class="ghost" onclick="seed()">Load sample students</button></div>'}
+function gate(){if(!DB)return '<div class="card"><h3>Sign in to use TuitionDesk</h3><p class="mute" style="margin-top:6px">Open this page from its Claude link while signed in. Saved data works only there.</p></div>';if(!LOADED)return '<p class="mute">Loading…</p>';return ''}
+
+/* Fees */
+function fees(){var g=gate();if(g)return g;if(!S.length)return empty();var p=pending(),tot=p.reduce(function(a,s){return a+s.fee},0);
+var h='<div class="card hero"><small>Pending fees</small><div class="num">'+inr(tot)+'</div><small>'+p.length+' students owe fees</small></div>';
+h+='<button onclick="remindAll()" style="margin-bottom:12px;background:#1FA855;color:#fff">Send WhatsApp reminder to all</button><div class="card">';
+if(!p.length)h+='<p class="mute">All fees are paid. Nothing to chase today.</p>';
+p.forEach(function(s){var d=late(s);h+='<div class="row"><div><b>'+esc(s.n)+'</b><div class="mute">Due '+dfmt(s.due)+'</div></div><div style="text-align:right"><b class="num">'+inr(s.fee)+'</b><div><span class="chip'+(d>14?' red':'')+'">'+d+' days late</span> <button class="small ghost" onclick="markPaid(\''+s.id+'\')">Paid</button></div></div></div>'});
+return h+'</div>'}
+function remindMsg(s){return 'Dear '+s.par+', a gentle reminder from '+cname()+': '+s.n+'’s fee of '+inr(s.fee)+' was due on '+dfmt(s.due)+' ('+late(s)+' days ago).'+(CFG.upi?' You can pay by UPI to '+CFG.upi+'.':'')+' Thank you!'}
+function remindAll(){var h='<p class="mute" style="margin-bottom:8px">WhatsApp opens one chat at a time. Tap Send for each parent.</p><div class="card">';
+pending().forEach(function(s){h+='<div class="row"><div><b>'+esc(s.par)+'</b><div class="mute">'+esc(s.n)+' · '+inr(s.fee)+'</div></div><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(s.ph,remindMsg(s))+'" onclick="sentLink(this)">Send</a></div>'});
+sheet('Fee reminders',h+'</div>')}
+function markPaid(id){var s=S.filter(function(x){return x.id===id})[0];if(!s||!confirm('Mark '+s.n+'’s '+inr(s.fee)+' as paid?'))return;
+CFG.collected=(CFG.collected||0)+s.fee;s.fee=0;s.due='';Promise.all([save(s),saveCfg()]).then(function(){toast('Payment recorded')}).catch(fail)}
+
+/* Attendance */
+function attendance(){var g=gate();if(g)return g;if(!S.length)return empty();
+var h='<h2>'+BATCH+'</h2><p class="mute" style="margin:-6px 0 10px">'+dfmt(NOW)+'</p><div class="card">';
+S.forEach(function(s){var v=st.att[s.id];h+='<div class="row"><b>'+esc(s.n)+'</b><div class="pa"><button class="p'+(v==='P'?' on':'')+'" aria-label="Present" onclick="mark(\''+s.id+'\',\'P\')">P</button><button class="a'+(v==='A'?' on':'')+'" aria-label="Absent" onclick="mark(\''+s.id+'\',\'A\')">A</button></div></div>'});
+var m=S.filter(function(s){return st.att[s.id]}).length;
+return h+'</div><button onclick="saveAtt()">Save attendance ('+m+'/'+S.length+' marked)</button>'}
+function mark(id,v){st.att[id]=v;render()}
+function saveAtt(){var un=S.filter(function(s){return !st.att[s.id]});if(un.length){toast('Mark all students first: '+un.length+' left');return}
+var ab=[];S.forEach(function(s){s.att=[(s.att[0]||0)+(st.att[s.id]==='P'?1:0),(s.att[1]||0)+1];if(st.att[s.id]==='A')ab.push(s)});
+Promise.all(S.map(save)).then(function(){st.att={};render();
+if(!ab.length){toast('Saved. Everyone was present');return}
+var h='<p class="mute" style="margin-bottom:8px">Attendance saved. Send an absent alert to each parent.</p><div class="card">';
+ab.forEach(function(s){h+='<div class="row"><div><b>'+esc(s.par)+'</b><div class="mute">'+esc(s.n)+' was absent</div></div><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(s.ph,'Dear '+s.par+', '+s.n+' was absent from today’s class at '+cname()+' ('+dfmt(NOW)+'). Please let us know if all is well.')+'" onclick="sentLink(this)">Send</a></div>'});
+sheet('Absent alerts',h+'</div>')}).catch(fail)}
+
+/* Tests */
+function tests(){var g=gate();if(g)return g;if(!S.length)return empty();var s=me(),sc=(s.sc||[]),last=lastSc(s),d=sc.length>1?last-sc[sc.length-2]:0;
+var h='<div class="chips">';S.forEach(function(x){h+='<button class="'+(s.id===x.id?'on':'')+'" onclick="st.sel=\''+x.id+'\';render()">'+esc(x.n.split(' ')[0])+'</button>'});h+='</div>';
+h+='<div class="card hero"><small>'+esc(s.n)+' · this week</small><div class="row" style="border:0;margin:0;padding:0"><div class="num">'+last+'/'+MAX+'</div><div style="text-align:right"><div class="num">#'+rank(s)+'</div><small>of '+S.length+' in class</small></div></div><small>'+(sc.length>1?(d>=0?'Up ':'Down ')+Math.abs(d)+' marks from last week':'First test recorded')+'</small></div>';
+h+='<div class="card"><h3>Last 6 tests</h3><div class="bars">';
+sc.slice(-6).forEach(function(v,i,a){h+='<div class="c'+(i===a.length-1?' last':'')+'"><b>'+v+'</b><i style="height:'+(v/MAX*100)+'%"></i>T'+(sc.length-a.length+i+1)+'</div>'});
+if(!sc.length)h+='<p class="mute">No scores yet.</p>';
+h+='</div></div><a class="btn wa" target="_blank" rel="noopener" style="margin-bottom:8px" href="'+wa(s.ph,cname()+' · Weekly report\n'+s.n+'\nScore: '+last+'/'+MAX+'\nRank: '+rank(s)+' of '+S.length+'\nLast tests: '+sc.slice(-6).join(', '))+'">Share report on WhatsApp</a><button class="ghost" onclick="addScores()">Enter this week’s scores</button>';return h}
+function addScores(){var h='<p class="mute" style="margin-bottom:8px">Marks out of '+MAX+'. Leave blank to skip a student.</p><div class="card">';
+S.forEach(function(s){h+='<div class="row"><label for="sc_'+s.id+'">'+esc(s.n)+'</label><input id="sc_'+s.id+'" type="number" inputmode="numeric" min="0" max="'+MAX+'" style="width:80px"></div>'});
+sheet('New test scores',h+'</div><button style="margin-top:10px" onclick="saveScores()">Save scores</button>')}
+function saveScores(){var j=[];S.forEach(function(s){var v=$('sc_'+s.id).value;if(v!==''){v=Math.min(MAX,Math.max(0,+v));s.sc=(s.sc||[]).concat([v]).slice(-6);j.push(save(s))}});
+if(!j.length){toast('Enter at least one score');return}Promise.all(j).then(function(){closeSheet();toast('Scores saved')}).catch(fail)}
+
+/* Parent view */
+function parentTab(){var p=st.pv,h='';
+if(!p){h='<div class="card"><h3>Parent login</h3><p class="mute" style="margin:6px 0 10px">Enter the 6-character code given by your tuition centre.</p><input id="pcode" maxlength="6" autocapitalize="characters" placeholder="e.g. K7M2QX" value="'+esc(st.pcode)+'" style="margin-bottom:10px;text-transform:uppercase"><button onclick="loadPV($(\'pcode\').value)">View my child</button></div>';return h}
+var pc=p.att[1]?Math.round(p.att[0]/p.att[1]*100):0,d=late(p);
+h+='<div class="row" style="border:0;margin:0 0 10px"><h2 style="margin:0">'+esc(p.n)+'</h2></div>';
+h+='<div class="card"><div class="row" style="border:0;margin:0;padding:0"><span class="mute">Attendance</span><b class="num" style="font-size:28px">'+pc+'%</b></div><div class="prog"><i style="width:'+pc+'%"></i></div><p class="mute" style="margin-top:6px">'+p.att[0]+' of '+p.att[1]+' classes attended</p></div>';
+h+='<div class="card"><h3>Homework</h3>';(p.hw||[]).forEach(function(x){h+='<div class="row"><span>'+esc(x)+'</span></div>'});if(!(p.hw||[]).length)h+='<p class="mute">No homework right now.</p>';h+='</div>';
+if(p.fee>0){h+='<div class="card"><div class="row" style="border:0;margin:0;padding:0"><div><div class="mute">Fee due</div><b class="num" style="font-size:28px">'+inr(p.fee)+'</b></div><span class="chip red">'+d+' days late</span></div>';
+h+=p.upi?'<a class="btn" style="margin-top:12px" href="upi://pay?pa='+encodeURIComponent(p.upi)+'&pn='+encodeURIComponent(p.centre||'Tuition')+'&am='+p.fee+'&cu=INR&tn='+encodeURIComponent(p.n+' fee')+'" onclick="toast(\'Opening your UPI app…\')">Pay '+inr(p.fee)+' by UPI</a><p class="mute" style="margin-top:8px;text-align:center">Works on a phone with a UPI app installed</p>':'<p class="mute" style="margin-top:8px">The centre has not added a UPI ID yet. Please pay at the centre.</p>';h+='</div>'}
+else h+='<div class="card"><span class="chip green">Fees paid</span><p class="mute" style="margin-top:6px">No fee due. Thank you!</p></div>';
+return h+'<button class="ghost" onclick="loadAll()">Refresh</button>'}
+function loadPV(c){c=(c||'').trim().toUpperCase();if(!c)return;if(!DB){toast('Not signed in');return}
+DB.doc('pv/'+c).get().then(function(d){if(!d.exists){toast('Code not found. Check with your tuition centre');return}st.pv=d.data();st.pcode=c;try{localStorage.setItem('td_code',c)}catch(e){}render()}).catch(function(){toast('Could not load. Try again')})}
+
+/* Owner */
+function owner(){var g=gate();if(g)return g;var tot=pending().reduce(function(a,s){return a+s.fee},0),col=CFG.collected||0,all=col+tot,cp=all?Math.round(col/all*100):0;
+var h='<div class="card"><h3>Fees collected vs pending</h3><div class="split"><i style="width:'+cp+'%;background:var(--green)"></i><i style="width:'+(100-cp)+'%;background:var(--red)"></i></div><div class="row" style="border:0;margin:0;padding:0"><div><b class="num" style="font-size:22px;color:var(--green)">'+inr(col)+'</b><div class="mute">Collected</div></div><div style="text-align:right"><b class="num" style="font-size:22px;color:var(--red)">'+inr(tot)+'</b><div class="mute">Pending</div></div></div></div>';
+h+='<div class="grid"><div class="card"><div class="num">'+S.length+'</div><div class="mute">Students</div></div><div class="card"><div class="num">'+pending().length+'</div><div class="mute">Fees pending</div></div></div>';
+h+='<h2 style="margin-top:16px">Referral enquiries</h2><div class="card">';if(!ENQ.length)h+='<p class="mute">No enquiries yet.</p>';
+ENQ.forEach(function(r){h+='<div class="row"><div><b>'+esc(r.n)+'</b><div class="mute">'+esc(r.cls)+' · via '+esc(r.by)+'</div></div><div style="text-align:right"><span class="chip'+(r.st==='New'?' red':' green')+'">'+esc(r.st)+'</span><div style="margin-top:6px"><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(r.ph,'Hello! Thank you for your interest in '+cname()+'. When can we schedule a free demo class for '+r.n+'?')+'" onclick="enqDone(\''+r.id+'\')">WhatsApp</a></div></div></div>'});
+h+='</div><button class="ghost" onclick="addEnq()">Add enquiry</button><h2 style="margin-top:16px">Students and parent codes</h2><div class="card">';
+S.forEach(function(s){h+='<div class="row"><div><b>'+esc(s.n)+'</b><div class="mute">'+esc(s.par)+'</div></div><div style="text-align:right"><b class="num">'+esc(s.code)+'</b><div><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(s.ph,'Dear '+s.par+', your TuitionDesk code for '+s.n+' at '+cname()+' is '+s.code+'. Open the TuitionDesk link and enter this code to see attendance, homework and fees.')+'">Share code</a></div></div></div>'});
+if(!S.length)h+='<p class="mute">No students yet.</p>';
+return h+'</div><button onclick="addStudent()" style="margin-bottom:8px">Add student</button><button class="ghost" style="margin-bottom:8px" onclick="postHW()">Post homework to all</button><button class="ghost" onclick="settings()">Centre name and UPI ID</button>'}
+function addStudent(){sheet('Add student','<div class="card"><label class="mute" for="f1">Student name</label><input id="f1"><label class="mute" for="f2">Parent name</label><input id="f2"><label class="mute" for="f3">Parent WhatsApp number (10 digits)</label><input id="f3" type="tel" inputmode="numeric" maxlength="10"><label class="mute" for="f4">Fee pending (₹, 0 if none)</label><input id="f4" type="number" inputmode="numeric" value="0"><label class="mute" for="f5">Fee due date</label><input id="f5" type="date"></div><button onclick="doAdd()">Save student</button>')}
+function doAdd(){var n=$('f1').value.trim(),par=$('f2').value.trim(),ph=$('f3').value.replace(/\D/g,''),fee=+$('f4').value||0,due=$('f5').value;
+if(!n||!par||ph.length!==10){toast('Enter name, parent name and a 10-digit number');return}if(fee>0&&!due){toast('Pick a fee due date');return}
+var s={id:DB.collection('students').doc().id,n:n,par:par,ph:'91'+ph,fee:fee,due:fee>0?due:'',att:[0,0],sc:[],hw:[],code:newCode()};
+save(s).then(function(){closeSheet();toast('Student added')}).catch(fail)}
+function postHW(){sheet('Post homework','<div class="card"><label class="mute" for="hw">Homework for all students</label><textarea id="hw" rows="3" placeholder="e.g. Algebra ex. 4.2, Q1–10 (due Friday)"></textarea></div><button onclick="doHW()">Post to all parents</button>')}
+function doHW(){var t=$('hw').value.trim();if(!t){toast('Write the homework first');return}
+Promise.all(S.map(function(s){s.hw=[t].concat(s.hw||[]).slice(0,3);return save(s)})).then(function(){closeSheet();toast('Homework posted')}).catch(fail)}
+function settings(){sheet('Centre settings','<div class="card"><label class="mute" for="c1">Centre name</label><input id="c1" value="'+esc(CFG.name)+'"><label class="mute" for="c2">UPI ID for fee payments</label><input id="c2" value="'+esc(CFG.upi)+'" placeholder="name@bank" autocapitalize="none"></div><button onclick="doCfg()">Save settings</button>')}
+function doCfg(){CFG.name=$('c1').value.trim();CFG.upi=$('c2').value.trim();Promise.all([saveCfg()].concat(S.map(save))).then(function(){closeSheet();toast('Settings saved')}).catch(fail)}
+function addEnq(){sheet('Add enquiry','<div class="card"><label class="mute" for="e1">Child’s name</label><input id="e1"><label class="mute" for="e2">Class</label><input id="e2" placeholder="Class 9"><label class="mute" for="e3">Referred by</label><input id="e3"><label class="mute" for="e4">WhatsApp number (10 digits)</label><input id="e4" type="tel" inputmode="numeric" maxlength="10"></div><button onclick="doEnq()">Save enquiry</button>')}
+function doEnq(){var ph=$('e4').value.replace(/\D/g,''),n=$('e1').value.trim();if(!n||ph.length!==10){toast('Enter a name and a 10-digit number');return}
+DB.collection('enq').add({n:n,cls:$('e2').value.trim()||'—',by:$('e3').value.trim()||'—',ph:'91'+ph,st:'New'}).then(function(){closeSheet();toast('Enquiry added')}).catch(fail)}
+function enqDone(id){DB.doc('enq/'+id).update({st:'Contacted'}).catch(function(){})}
+function seed(){var o=function(n){return new Date(NOW-n*864e5).toISOString().slice(0,10)},d=[['Aarav Mehta','Mr. Mehta',2500,22,[21,24],[34,38,36,41,39,44]],['Diya Nair','Mrs. Nair',2500,15,[23,24],[40,42,45,44,46,48]],['Kabir Singh','Mr. Singh',5000,29,[17,24],[28,30,27,33,31,35]],['Ananya Iyer','Mrs. Iyer',0,0,[24,24],[44,46,47,45,48,49]],['Rohan Gupta','Mr. Gupta',2500,7,[20,24],[31,33,35,32,36,37]],['Ishita Verma','Mrs. Verma',0,0,[22,24],[38,39,42,43,41,45]],['Vihaan Patel','Mr. Patel',2500,3,[19,24],[25,29,31,30,34,36]],['Saanvi Reddy','Mrs. Reddy',0,0,[23,24],[42,41,44,46,45,47]],['Arjun Das','Mr. Das',5000,26,[18,24],[22,26,25,29,28,32]],['Meera Joshi','Mrs. Joshi',0,0,[22,24],[36,37,40,39,42,43]]];
+Promise.all(d.map(function(x,i){return save({id:'s'+(i+1)+newCode().toLowerCase(),n:x[0],par:x[1],ph:'9198765000'+(10+i),fee:x[2],due:x[2]?o(x[3]):'',att:x[4],sc:x[5],hw:['Algebra ex. 4.2, Q1–10 (due tomorrow)','Science chapter 6 notes (Fri)'],code:newCode()})})).then(function(){toast('Sample students loaded')}).catch(fail)}
+
+/* ===== Supabase version: auth + database ===== */
+var SB_URL='https://wcunwwppublgrvtloukt.supabase.co',SB_KEY='sb_publishable_-R66TUalzLHug1eyZiZUGw_Kl4os2KY';
+var sb=null,USER=null,CENTRE=null,HW=[],KIDS=[];st.am='owner';st.tab='fees';
+function today(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function gate(){if(!sb)return '<div class="card">Could not load the database library. Check your internet.</div>';if(!LOADED)return '<p class="mute">Loading…</p>';return ''}
+function empty(){return '<div class="card"><h3>No students yet</h3><p class="mute" style="margin:6px 0 12px">Add your first student to get started.</p><button onclick="addStudent()">Add student</button></div>'}
+
+/* Login */
+function loginUI(){var h='<div class="chips"><button class="'+(st.am==='owner'?'on':'')+'" onclick="st.am=\'owner\';render()">Owner</button><button class="'+(st.am==='parent'?'on':'')+'" onclick="st.am=\'parent\';st.otp=0;render()">Parent</button></div><div class="card">';
+if(st.am==='parent'){if(!st.otp)h+='<h3>Parent login</h3><p class="mute" style="margin:4px 0 8px">Use the mobile number the centre has on file. We will send an OTP.</p><label class="mute" for="lp">Mobile number (10 digits)</label><input id="lp" type="tel" inputmode="numeric" maxlength="10"><button onclick="sendOtp()">Send OTP</button>';
+else h+='<h3>Enter OTP</h3><p class="mute" style="margin:4px 0 8px">Sent to +'+esc(st.ph)+'</p><input id="lo" inputmode="numeric" maxlength="6" aria-label="OTP"><button onclick="verifyOtp()">Verify</button><button class="ghost" style="margin-top:8px" onclick="st.otp=0;render()">Change number</button>'}
+else h+='<h3>Owner login</h3><label class="mute" for="le">Email</label><input id="le" type="email" autocapitalize="none"><label class="mute" for="lw">Password (6+ characters)</label><input id="lw" type="password"><button onclick="signIn()" style="margin-bottom:8px">Sign in</button><button class="ghost" onclick="signUp()">Create owner account</button>';
+return h+'</div>'}
+async function signIn(){var r=await sb.auth.signInWithPassword({email:$('le').value.trim(),password:$('lw').value});if(r.error)toast(r.error.message)}
+async function signUp(){var r=await sb.auth.signUp({email:$('le').value.trim(),password:$('lw').value});if(r.error){toast(r.error.message);return}if(!r.data.session)toast('Check your email to confirm, then sign in')}
+async function sendOtp(){var p=$('lp').value.replace(/\D/g,'');if(p.length!==10){toast('Enter a 10-digit number');return}st.ph='91'+p;var r=await sb.auth.signInWithOtp({phone:'+'+st.ph});if(r.error){toast('Could not send OTP: '+r.error.message);return}st.otp=1;render()}
+async function verifyOtp(){var r=await sb.auth.verifyOtp({phone:'+'+st.ph,token:$('lo').value.trim(),type:'sms'});if(r.error)toast(r.error.message)}
+function signOut(){sb.auth.signOut()}
+
+/* Load data */
+function build(x,att,sc,hw){var a=att.filter(function(r){return r.student_id===x.id});return {id:x.id,n:x.name,par:x.parent_name,ph:x.parent_phone,fee:x.fee_pending||0,due:x.fee_due||'',att:[a.filter(function(r){return r.present}).length,a.length],sc:sc.filter(function(r){return r.student_id===x.id}).map(function(r){return r.score}).slice(-6),hw:hw}}
+async function loadAll(){try{
+var o=await Promise.all([sb.from('students').select('*').order('name'),sb.from('attendance').select('student_id,present'),sb.from('test_scores').select('student_id,score').order('test_date',{ascending:true}),sb.from('homework').select('text').order('created_at',{ascending:false}).limit(3),sb.from('centres').select('*').limit(1)]);
+for(var i=0;i<o.length;i++)if(o[i].error)throw o[i].error;
+HW=o[3].data.map(function(r){return r.text});CENTRE=o[4].data[0]||null;CFG={name:CENTRE?CENTRE.name:'',upi:CENTRE&&CENTRE.upi||'',collected:0};
+var built=o[0].data.map(function(x){return build(x,o[1].data,o[2].data,HW)});
+if(OWNER){S=built;if(CENTRE){var e=await Promise.all([sb.from('enquiries').select('*'),sb.from('payments').select('amount')]);
+ENQ=(e[0].data||[]).map(function(r){return {id:r.id,n:r.child_name,cls:r.class||'—',by:r.referred_by||'—',ph:r.phone,st:r.status}});CFG.collected=(e[1].data||[]).reduce(function(a,r){return a+r.amount},0)}}else KIDS=built;
+}catch(e){toast('Could not load data. '+(e.message||''))}
+LOADED=true;render()}
+async function w(ps){try{var r=await Promise.all(ps);for(var i=0;i<r.length;i++)if(r[i].error)throw r[i].error;await loadAll();return true}catch(e){toast('Could not save. '+(e.message||''));return false}}
+
+/* Owner actions */
+function setupUI(){return '<div class="card"><h3>Set up your centre</h3><p class="mute" style="margin:4px 0 8px">One time only.</p><label class="mute" for="s1">Centre name</label><input id="s1"><label class="mute" for="s2">UPI ID for fee payments</label><input id="s2" placeholder="name@bank" autocapitalize="none"><button onclick="doSetup()">Create centre</button></div>'}
+async function doSetup(){var n=$('s1').value.trim();if(!n){toast('Enter the centre name');return}if(await w([sb.from('centres').insert({name:n,upi:$('s2').value.trim()})]))toast('Centre created')}
+function markPaid(id){var s=S.filter(function(x){return x.id===id})[0];if(!s||!confirm('Mark '+s.n+'’s '+inr(s.fee)+' as paid?'))return;
+w([sb.from('payments').insert({centre_id:CENTRE.id,student_id:id,amount:s.fee}),sb.from('students').update({fee_pending:0,fee_due:null}).eq('id',id)]).then(function(ok){if(ok)toast('Payment recorded')})}
+async function saveAtt(){var un=S.filter(function(s){return !st.att[s.id]});if(un.length){toast('Mark all students first: '+un.length+' left');return}
+var ab=S.filter(function(s){return st.att[s.id]==='A'}),rows=S.map(function(s){return {centre_id:CENTRE.id,student_id:s.id,day:today(),present:st.att[s.id]==='P'}});
+if(!(await w([sb.from('attendance').upsert(rows,{onConflict:'student_id,day'})])))return;st.att={};render();
+if(!ab.length){toast('Saved. Everyone was present');return}
+var h='<p class="mute" style="margin-bottom:8px">Attendance saved. Send an absent alert to each parent.</p><div class="card">';
+ab.forEach(function(s){h+='<div class="row"><div><b>'+esc(s.par)+'</b><div class="mute">'+esc(s.n)+' was absent</div></div><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(s.ph,'Dear '+s.par+', '+s.n+' was absent from today’s class at '+cname()+' ('+dfmt(NOW)+'). Please let us know if all is well.')+'" onclick="sentLink(this)">Send</a></div>'});
+sheet('Absent alerts',h+'</div>')}
+async function saveScores(){var rows=[];S.forEach(function(s){var v=$('sc_'+s.id).value;if(v!=='')rows.push({centre_id:CENTRE.id,student_id:s.id,score:Math.min(MAX,Math.max(0,+v)),max_score:MAX})});
+if(!rows.length){toast('Enter at least one score');return}if(await w([sb.from('test_scores').insert(rows)])){closeSheet();toast('Scores saved')}}
+async function doAdd(){var n=$('f1').value.trim(),par=$('f2').value.trim(),ph=$('f3').value.replace(/\D/g,''),fee=+$('f4').value||0,due=$('f5').value;
+if(!n||!par||ph.length!==10){toast('Enter name, parent name and a 10-digit number');return}if(fee>0&&!due){toast('Pick a fee due date');return}
+if(await w([sb.from('students').insert({centre_id:CENTRE.id,name:n,parent_name:par,parent_phone:'91'+ph,fee_pending:fee,fee_due:fee>0?due:null})])){closeSheet();toast('Student added')}}
+async function doHW(){var t=$('hw').value.trim();if(!t){toast('Write the homework first');return}if(await w([sb.from('homework').insert({centre_id:CENTRE.id,text:t})])){closeSheet();toast('Homework posted')}}
+async function doCfg(){if(await w([sb.from('centres').update({name:$('c1').value.trim(),upi:$('c2').value.trim()}).eq('id',CENTRE.id)])){closeSheet();toast('Settings saved')}}
+async function doEnq(){var ph=$('e4').value.replace(/\D/g,''),n=$('e1').value.trim();if(!n||ph.length!==10){toast('Enter a name and a 10-digit number');return}
+if(await w([sb.from('enquiries').insert({centre_id:CENTRE.id,child_name:n,class:$('e2').value.trim()||null,referred_by:$('e3').value.trim()||null,phone:'91'+ph})])){closeSheet();toast('Enquiry added')}}
+function enqDone(id){sb.from('enquiries').update({status:'Contacted'}).eq('id',id).then(loadAll)}
+
+function owner(){var g=gate();if(g)return g;var tot=pending().reduce(function(a,s){return a+s.fee},0),col=CFG.collected||0,all=col+tot,cp=all?Math.round(col/all*100):0,url=location.href.split('#')[0];
+var h='<div class="card"><h3>Fees collected vs pending</h3><div class="split"><i style="width:'+cp+'%;background:var(--green)"></i><i style="width:'+(100-cp)+'%;background:var(--red)"></i></div><div class="row" style="border:0;margin:0;padding:0"><div><b class="num" style="font-size:22px;color:var(--green)">'+inr(col)+'</b><div class="mute">Collected</div></div><div style="text-align:right"><b class="num" style="font-size:22px;color:var(--red)">'+inr(tot)+'</b><div class="mute">Pending</div></div></div></div>';
+h+='<div class="grid"><div class="card"><div class="num">'+S.length+'</div><div class="mute">Students</div></div><div class="card"><div class="num">'+pending().length+'</div><div class="mute">Fees pending</div></div></div>';
+h+='<h2 style="margin-top:16px">Referral enquiries</h2><div class="card">';if(!ENQ.length)h+='<p class="mute">No enquiries yet.</p>';
+ENQ.forEach(function(r){h+='<div class="row"><div><b>'+esc(r.n)+'</b><div class="mute">'+esc(r.cls)+' · via '+esc(r.by)+'</div></div><div style="text-align:right"><span class="chip'+(r.st==='New'?' red':' green')+'">'+esc(r.st)+'</span><div style="margin-top:6px"><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(r.ph,'Hello! Thank you for your interest in '+cname()+'. When can we schedule a free demo class for '+r.n+'?')+'" onclick="enqDone(\''+r.id+'\')">WhatsApp</a></div></div></div>'});
+h+='</div><button class="ghost" onclick="addEnq()">Add enquiry</button><h2 style="margin-top:16px">Students</h2><div class="card">';
+S.forEach(function(s){h+='<div class="row"><div><b>'+esc(s.n)+'</b><div class="mute">'+esc(s.par)+' · +'+esc(s.ph)+'</div></div><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(s.ph,'Dear '+s.par+', you can see '+s.n+'’s attendance, homework and fees on TuitionDesk: '+url+' . Choose Parent and log in with this mobile number.')+'">Invite</a></div>'});
+if(!S.length)h+='<p class="mute">No students yet.</p>';
+return h+'</div><button onclick="addStudent()" style="margin-bottom:8px">Add student</button><button class="ghost" style="margin-bottom:8px" onclick="postHW()">Post homework to all</button><button class="ghost" onclick="settings()">Centre name and UPI ID</button>'}
+
+/* Parent view (kept from the old renderer, now fed by the database) */
+var parentView=parentTab;
+parentTab=function(){var g=gate();if(g)return g;var L=OWNER?S:KIDS;
+if(!L.length)return '<div class="card"><h3>No child linked</h3><p class="mute" style="margin-top:6px">This mobile number is not linked to a student. Please ask your tuition centre to add it.</p></div>';
+var k=L[st.kid||0]||L[0],h='';if(L.length>1){h='<div class="chips">';L.forEach(function(x,i){h+='<button class="'+(x===k?'on':'')+'" onclick="st.kid='+i+';render()">'+esc(x.n.split(' ')[0])+'</button>'});h+='</div>'}
+st.pv=Object.assign({},k,{upi:CFG.upi,centre:CFG.name});return h+parentView()};
+
+var TABS=[['fees','Fees',fees],['att','Attendance',attendance],['tests','Tests',tests],['parent','Parent',parentTab],['owner','Owner',owner]];
+function render(){var y=window.scrollY;
+if(!USER){$('nav').style.display='none';$('who').innerHTML='';$('main').innerHTML=sb?loginUI():gate();return}
+$('who').innerHTML=(OWNER?'Owner':'Parent')+' · <a href="#" onclick="signOut();return false" style="color:inherit">Sign out</a>';
+if(!OWNER)st.tab='parent';$('nav').style.display=OWNER&&CENTRE?'flex':'none';
+if(OWNER&&LOADED&&!CENTRE){$('main').innerHTML=setupUI();return}
+var vis=OWNER?TABS:[TABS[3]];
+$('nav').innerHTML=vis.map(function(t){return '<button class="'+(st.tab===t[0]?'on':'')+'" onclick="go(\''+t[0]+'\')">'+t[1]+'</button>'}).join('');
+$('main').innerHTML=TABS.filter(function(t){return t[0]===st.tab})[0][2]();window.scrollTo(0,y)}
+(function(){if(!window.supabase){render();return}
+sb=supabase.createClient(SB_URL,SB_KEY);DB=sb;
+sb.auth.onAuthStateChange(function(ev,ses){USER=ses?ses.user:null;OWNER=!!(USER&&USER.email);LOADED=false;S=[];KIDS=[];st.tab=OWNER?'fees':'parent';render();if(USER)setTimeout(loadAll,0)});
+render()})();
+</script>
+</body>
+</html>
