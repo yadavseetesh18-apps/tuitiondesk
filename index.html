@@ -107,9 +107,9 @@ function gate(){if(!DB)return '<div class="card"><h3>Sign in to use TuitionDesk<
 /* Fees */
 function fees(){var g=gate();if(g)return g;if(!S.length)return empty();var p=pending(),tot=p.reduce(function(a,s){return a+s.fee},0);
 var h='<div class="card hero"><small>Pending fees</small><div class="num">'+inr(tot)+'</div><small>'+p.length+' students owe fees</small></div>';
-h+='<button onclick="remindAll()" style="margin-bottom:12px;background:#1FA855;color:#fff">Send WhatsApp reminder to all</button><div class="card">';
+h+='<button onclick="remindAll()" style="margin-bottom:12px;background:#1FA855;color:#fff">Send WhatsApp reminder to all</button><button class="ghost" onclick="addMonthFees()" style="margin-bottom:12px">Add this month’s fees</button><div class="card">';
 if(!p.length)h+='<p class="mute">All fees are paid. Nothing to chase today.</p>';
-p.forEach(function(s){var d=late(s);h+='<div class="row"><div><b>'+esc(s.n)+'</b><div class="mute">Due '+dfmt(s.due)+'</div></div><div style="text-align:right"><b class="num">'+inr(s.fee)+'</b><div><span class="chip'+(d>14?' red':'')+'">'+d+' days late</span> <button class="small ghost" onclick="markPaid(\''+s.id+'\')">Paid</button></div></div></div>'});
+p.forEach(function(s){var d=late(s);h+='<div class="row"><div><b>'+esc(s.n)+'</b><div class="mute">Due '+dfmt(s.due)+'</div></div><div style="text-align:right"><b class="num">'+inr(s.fee)+'</b><div><span class="chip'+(d>14?' red':'')+'">'+d+' days late</span> <button class="small ghost" onclick="markPaid(\''+s.id+'\')">Paid</button> <button class="small ghost" onclick="partPay(\''+s.id+'\')">Part</button></div></div></div>'});
 return h+'</div>'}
 function remindMsg(s){return 'Dear '+s.par+', a gentle reminder from '+cname()+': '+s.n+'’s fee of '+inr(s.fee)+' was due on '+dfmt(s.due)+' ('+late(s)+' days ago).'+(CFG.upi?' You can pay by UPI to '+CFG.upi+'.':'')+' Thank you!'}
 function remindAll(){var h='<p class="mute" style="margin-bottom:8px">WhatsApp opens one chat at a time. Tap Send for each parent.</p><div class="card">';
@@ -193,7 +193,7 @@ var SB_URL='https://wcunwwppublgrvtloukt.supabase.co',SB_KEY='sb_publishable_-R6
 var sb=null,USER=null,CENTRE=null,HW=[],KIDS=[];st.am='owner';st.tab='fees';
 function today(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function gate(){if(!sb)return '<div class="card">Could not load the database library. Check your internet.</div>';if(!LOADED)return '<p class="mute">Loading…</p>';return ''}
-function empty(){return '<div class="card"><h3>No students yet</h3><p class="mute" style="margin:6px 0 12px">Add your first student to get started.</p><button onclick="addStudent()">Add student</button></div>'}
+function empty(){return '<div class="card"><h3>No students yet</h3><p class="mute" style="margin:6px 0 12px">Add your first student, or load 10 demo students to try the app.</p><button onclick="addStudent()" style="margin-bottom:8px">Add student</button><button class="ghost" onclick="seedDemo()">Load demo students</button></div>'}
 
 /* Login */
 function loginUI(){var h='<div class="chips"><button class="'+(st.am==='owner'?'on':'')+'" onclick="st.am=\'owner\';render()">Owner</button><button class="'+(st.am==='parent'?'on':'')+'" onclick="st.am=\'parent\';st.otp=0;render()">Parent</button></div><div class="card">';
@@ -208,7 +208,7 @@ async function verifyOtp(){var r=await sb.auth.verifyOtp({phone:'+'+st.ph,token:
 function signOut(){sb.auth.signOut()}
 
 /* Load data */
-function build(x,att,sc,hw){var a=att.filter(function(r){return r.student_id===x.id});return {id:x.id,n:x.name,par:x.parent_name,ph:x.parent_phone,fee:x.fee_pending||0,due:x.fee_due||'',att:[a.filter(function(r){return r.present}).length,a.length],sc:sc.filter(function(r){return r.student_id===x.id}).map(function(r){return r.score}).slice(-6),hw:hw}}
+function build(x,att,sc,hw){var a=att.filter(function(r){return r.student_id===x.id});return {id:x.id,n:x.name,par:x.parent_name,ph:x.parent_phone,fee:x.fee_pending||0,due:x.fee_due||'',monthly:x.monthly_fee||0,dueDay:x.due_day||5,att:[a.filter(function(r){return r.present}).length,a.length],sc:sc.filter(function(r){return r.student_id===x.id}).map(function(r){return r.score}).slice(-6),hw:hw}}
 async function loadAll(){try{
 var o=await Promise.all([sb.from('students').select('*').order('name'),sb.from('attendance').select('student_id,present'),sb.from('test_scores').select('student_id,score').order('test_date',{ascending:true}),sb.from('homework').select('text').order('created_at',{ascending:false}).limit(3),sb.from('centres').select('*').limit(1)]);
 for(var i=0;i<o.length;i++)if(o[i].error)throw o[i].error;
@@ -249,9 +249,9 @@ h+='<div class="grid"><div class="card"><div class="num">'+S.length+'</div><div 
 h+='<h2 style="margin-top:16px">Referral enquiries</h2><div class="card">';if(!ENQ.length)h+='<p class="mute">No enquiries yet.</p>';
 ENQ.forEach(function(r){h+='<div class="row"><div><b>'+esc(r.n)+'</b><div class="mute">'+esc(r.cls)+' · via '+esc(r.by)+'</div></div><div style="text-align:right"><span class="chip'+(r.st==='New'?' red':' green')+'">'+esc(r.st)+'</span><div style="margin-top:6px"><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(r.ph,'Hello! Thank you for your interest in '+cname()+'. When can we schedule a free demo class for '+r.n+'?')+'" onclick="enqDone(\''+r.id+'\')">WhatsApp</a></div></div></div>'});
 h+='</div><button class="ghost" onclick="addEnq()">Add enquiry</button><h2 style="margin-top:16px">Students</h2><div class="card">';
-S.forEach(function(s){h+='<div class="row"><div><b>'+esc(s.n)+'</b><div class="mute">'+esc(s.par)+' · +'+esc(s.ph)+'</div></div><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(s.ph,'Dear '+s.par+', you can see '+s.n+'’s attendance, homework and fees on TuitionDesk: '+url+' . Choose Parent and log in with this mobile number.')+'">Invite</a></div>'});
+S.forEach(function(s){h+='<div class="row"><div><b>'+esc(s.n)+'</b><div class="mute">'+esc(s.par)+' · '+inr(s.monthly)+'/month</div></div><span><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(s.ph,'Dear '+s.par+', you can see '+s.n+'’s attendance, homework and fees on TuitionDesk: '+url+' . Choose Parent and log in with this mobile number.')+'">Invite</a> <button class="small ghost" onclick="editFee(\''+s.id+'\')">Edit</button></span></div>'});
 if(!S.length)h+='<p class="mute">No students yet.</p>';
-return h+'</div><button onclick="addStudent()" style="margin-bottom:8px">Add student</button><button class="ghost" style="margin-bottom:8px" onclick="postHW()">Post homework to all</button><button class="ghost" onclick="settings()">Centre name and UPI ID</button>'}
+return h+'</div><button onclick="addStudent()" style="margin-bottom:8px">Add student</button><button class="ghost" style="margin-bottom:8px" onclick="postHW()">Post homework to all</button><button class="ghost" style="margin-bottom:8px" onclick="settings()">Centre name and UPI ID</button>'+demoBtn()}
 
 /* Parent view (kept from the old renderer, now fed by the database) */
 var parentView=parentTab;
@@ -269,6 +269,48 @@ if(OWNER&&LOADED&&!CENTRE){$('main').innerHTML=setupUI();return}
 var vis=OWNER?TABS:[TABS[3]];
 $('nav').innerHTML=vis.map(function(t){return '<button class="'+(st.tab===t[0]?'on':'')+'" onclick="go(\''+t[0]+'\')">'+t[1]+'</button>'}).join('');
 $('main').innerHTML=TABS.filter(function(t){return t[0]===st.tab})[0][2]();window.scrollTo(0,y)}
+
+/* Demo data tools */
+function iso(n){var d=new Date(NOW-n*864e5);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function hasDemo(){return S.some(function(s){return String(s.ph).indexOf('9198765000')===0})}
+function demoBtn(){return hasDemo()?'<button class="ghost" onclick="removeDemo()">Remove demo students</button>':'<button class="ghost" onclick="seedDemo()">Load demo students</button>'}
+async function seedDemo(){if(!confirm('Add 10 demo students with sample fees, attendance and test scores?'))return;
+var D=[['Aarav Mehta','Mr. Mehta',2500,22,21,[34,38,36,41,39,44]],['Diya Nair','Mrs. Nair',2500,15,23,[40,42,45,44,46,48]],['Kabir Singh','Mr. Singh',5000,29,17,[28,30,27,33,31,35]],['Ananya Iyer','Mrs. Iyer',0,0,24,[44,46,47,45,48,49]],['Rohan Gupta','Mr. Gupta',2500,7,20,[31,33,35,32,36,37]],['Ishita Verma','Mrs. Verma',0,0,22,[38,39,42,43,41,45]],['Vihaan Patel','Mr. Patel',2500,3,19,[25,29,31,30,34,36]],['Saanvi Reddy','Mrs. Reddy',0,0,23,[42,41,44,46,45,47]],['Arjun Das','Mr. Das',5000,26,18,[22,26,25,29,28,32]],['Meera Joshi','Mrs. Joshi',0,0,22,[36,37,40,39,42,43]]];
+var cid=CENTRE.id;
+try{var r=await sb.from('students').insert(D.map(function(x,i){return {centre_id:cid,name:x[0],parent_name:x[1],parent_phone:'9198765000'+(10+i),fee_pending:x[2],fee_due:x[2]?iso(x[3]):null,monthly_fee:2500,due_day:5}})).select('id');
+if(r.error)throw r.error;
+var att=[],sc=[],pay=[];
+r.data.forEach(function(s,i){var x=D[i];for(var k=1;k<=24;k++)att.push({centre_id:cid,student_id:s.id,day:iso(k),present:k>24-x[4]});
+x[5].forEach(function(v,j){sc.push({centre_id:cid,student_id:s.id,test_date:iso((5-j)*7),score:v,max_score:MAX})});if(!x[2])pay.push({centre_id:cid,student_id:s.id,amount:2500})});
+if(await w([sb.from('attendance').insert(att),sb.from('test_scores').insert(sc),sb.from('payments').insert(pay),
+sb.from('homework').insert([{centre_id:cid,text:'Algebra ex. 4.2, Q1–10 (due tomorrow)'},{centre_id:cid,text:'Science chapter 6 notes (Fri)'}]),
+sb.from('enquiries').insert([{centre_id:cid,child_name:'Tanvi Rao',class:'Class 9',referred_by:'Ananya Iyer’s mother',phone:'9198111000'+1},{centre_id:cid,child_name:'Yash Kulkarni',class:'Class 10',referred_by:'Meera Joshi’s father',phone:'9198111000'+2,status:'Contacted'},{centre_id:cid,child_name:'Pooja Bansal',class:'Class 9',referred_by:'Aarav Mehta’s mother',phone:'9198111000'+3}])]))toast('Demo students loaded')}
+catch(e){toast('Could not load demo. '+(e.message||''));loadAll()}}
+async function removeDemo(){if(!confirm('Remove the demo students and their data? Your real students stay.'))return;
+if(await w([sb.from('students').delete().like('parent_phone','9198765000%'),sb.from('enquiries').delete().like('phone','9198111000%')]))toast('Demo data removed')}
+
+/* Monthly fees */
+function sById(id){return S.filter(function(x){return x.id===id})[0]}
+function addStudent(){sheet('Add student','<div class="card"><label class="mute" for="f1">Student name</label><input id="f1"><label class="mute" for="f2">Parent name</label><input id="f2"><label class="mute" for="f3">Parent WhatsApp number (10 digits)</label><input id="f3" type="tel" inputmode="numeric" maxlength="10"><label class="mute" for="f6">Monthly fee (₹)</label><input id="f6" type="number" inputmode="numeric"><label class="mute" for="f7">Fee due day of month (1–28)</label><input id="f7" type="number" inputmode="numeric" value="5"><label class="mute" for="f4">Fee pending right now (₹, 0 if none)</label><input id="f4" type="number" inputmode="numeric" value="0"><label class="mute" for="f5">Due date of that pending fee</label><input id="f5" type="date"></div><button onclick="doAdd()">Save student</button>')}
+async function doAdd(){var n=$('f1').value.trim(),par=$('f2').value.trim(),ph=$('f3').value.replace(/\D/g,''),fee=+$('f4').value||0,due=$('f5').value,mf=Math.max(0,+$('f6').value||0),dd=Math.min(28,Math.max(1,+$('f7').value||5));
+if(!n||!par||ph.length!==10){toast('Enter name, parent name and a 10-digit number');return}if(fee>0&&!due){toast('Pick the due date of the pending fee');return}
+if(await w([sb.from('students').insert({centre_id:CENTRE.id,name:n,parent_name:par,parent_phone:'91'+ph,fee_pending:fee,fee_due:fee>0?due:null,monthly_fee:mf,due_day:dd})])){closeSheet();toast('Student added')}}
+async function addMonthFees(){var L=S.filter(function(s){return s.monthly>0});
+if(!L.length){toast('Set monthly fees first: Owner tab, Students, Edit');return}
+var m=today().slice(0,7);
+if(CENTRE.last_fee_month===m&&!confirm('Fees were already added for this month. Adding again will double them. Continue?'))return;
+if(!confirm('Add this month’s fee to '+L.length+' students?'))return;
+var ps=L.map(function(s){return sb.from('students').update({fee_pending:s.fee+s.monthly,fee_due:(s.fee>0&&s.due)?s.due:m+'-'+String(s.dueDay).padStart(2,'0')}).eq('id',s.id)});
+ps.push(sb.from('centres').update({last_fee_month:m}).eq('id',CENTRE.id));
+if(await w(ps))toast('Fees added for '+L.length+' students')}
+function partPay(id){var s=sById(id);if(!s)return;sheet('Part payment','<p class="mute" style="margin-bottom:8px">'+esc(s.n)+' owes '+inr(s.fee)+'</p><div class="card"><label class="mute" for="pp">Amount received (₹)</label><input id="pp" type="number" inputmode="numeric" max="'+s.fee+'"></div><button onclick="doPart(\''+id+'\')">Record payment</button>')}
+async function doPart(id){var s=sById(id),a=+$('pp').value;if(!(a>0)||a>s.fee){toast('Enter an amount up to '+inr(s.fee));return}
+var left=s.fee-a;if(await w([sb.from('payments').insert({centre_id:CENTRE.id,student_id:id,amount:a}),sb.from('students').update({fee_pending:left,fee_due:left>0?s.due:null}).eq('id',id)])){closeSheet();toast(left>0?'Recorded. '+inr(left)+' still due':'Fully paid')}}
+function editFee(id){var s=sById(id);if(!s)return;sheet('Fee settings · '+esc(s.n),'<div class="card"><label class="mute" for="m1">Monthly fee (₹)</label><input id="m1" type="number" inputmode="numeric" value="'+s.monthly+'"><label class="mute" for="m2">Due day of month (1–28)</label><input id="m2" type="number" inputmode="numeric" min="1" max="28" value="'+s.dueDay+'"></div><button onclick="doEditFee(\''+id+'\')">Save</button>')}
+async function doEditFee(id){var mf=Math.max(0,+$('m1').value||0),dd=Math.min(28,Math.max(1,+$('m2').value||5));if(await w([sb.from('students').update({monthly_fee:mf,due_day:dd}).eq('id',id)])){closeSheet();toast('Saved')}}
+async function bulkFee(){var v=prompt('Monthly fee for ALL students (₹)');if(v===null)return;v=Math.max(0,parseInt(v,10)||0);if(!v){toast('Enter a valid amount');return}
+if(await w([sb.from('students').update({monthly_fee:v}).eq('centre_id',CENTRE.id)]))toast('Monthly fee set for all students')}
+function demoBtn(){return '<button class="ghost" style="margin-bottom:8px" onclick="bulkFee()">Set monthly fee for all students</button>'+(hasDemo()?'<button class="ghost" onclick="removeDemo()">Remove demo students</button>':'<button class="ghost" onclick="seedDemo()">Load demo students</button>')}
 (function(){if(!window.supabase){render();return}
 sb=supabase.createClient(SB_URL,SB_KEY);DB=sb;
 sb.auth.onAuthStateChange(function(ev,ses){USER=ses?ses.user:null;OWNER=!!(USER&&USER.email);LOADED=false;S=[];KIDS=[];st.tab=OWNER?'fees':'parent';render();if(USER)setTimeout(loadAll,0)});
