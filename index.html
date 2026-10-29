@@ -107,7 +107,7 @@ function gate(){if(!DB)return '<div class="card"><h3>Sign in to use TuitionDesk<
 /* Fees */
 function fees(){var g=gate();if(g)return g;if(!S.length)return empty();var p=pending(),tot=p.reduce(function(a,s){return a+s.fee},0);
 var h='<div class="card hero"><small>Pending fees</small><div class="num">'+inr(tot)+'</div><small>'+p.length+' students owe fees</small></div>';
-h+='<button onclick="remindAll()" style="margin-bottom:12px;background:#1FA855;color:#fff">Send WhatsApp reminder to all</button><button class="ghost" onclick="addMonthFees()" style="margin-bottom:12px">Add this month’s fees</button><div class="card">';
+h+='<button onclick="remindAll()" style="margin-bottom:12px;background:#1FA855;color:#fff">Send WhatsApp reminder to all</button><div class="card">';
 if(!p.length)h+='<p class="mute">All fees are paid. Nothing to chase today.</p>';
 p.forEach(function(s){var d=late(s);h+='<div class="row"><div><b>'+esc(s.n)+'</b><div class="mute">Due '+dfmt(s.due)+'</div></div><div style="text-align:right"><b class="num">'+inr(s.fee)+'</b><div><span class="chip'+(d>14?' red':'')+'">'+d+' days late</span> <button class="small ghost" onclick="markPaid(\''+s.id+'\')">Paid</button> <button class="small ghost" onclick="partPay(\''+s.id+'\')">Part</button></div></div></div>'});
 return h+'</div>'}
@@ -208,13 +208,13 @@ async function verifyOtp(){var r=await sb.auth.verifyOtp({phone:'+'+st.ph,token:
 function signOut(){sb.auth.signOut()}
 
 /* Load data */
-function build(x,att,sc,hw){var a=att.filter(function(r){return r.student_id===x.id});return {id:x.id,n:x.name,par:x.parent_name,ph:x.parent_phone,fee:x.fee_pending||0,due:x.fee_due||'',monthly:x.monthly_fee||0,dueDay:x.due_day||5,att:[a.filter(function(r){return r.present}).length,a.length],sc:sc.filter(function(r){return r.student_id===x.id}).map(function(r){return r.score}).slice(-6),hw:hw}}
-async function loadAll(){try{
+function build(x,att,sc,hw){var a=att.filter(function(r){return r.student_id===x.id});return {id:x.id,n:x.name,par:x.parent_name,ph:x.parent_phone,fee:x.fee_pending||0,due:x.fee_due||'',monthly:x.monthly_fee||0,dueDay:x.due_day||5,join:x.join_date||'',lastBilled:x.last_billed||'',att:[a.filter(function(r){return r.present}).length,a.length],sc:sc.filter(function(r){return r.student_id===x.id}).map(function(r){return r.score}).slice(-6),hw:hw}}
+async function loadAll(skipBill){try{
 var o=await Promise.all([sb.from('students').select('*').order('name'),sb.from('attendance').select('student_id,present'),sb.from('test_scores').select('student_id,score').order('test_date',{ascending:true}),sb.from('homework').select('text').order('created_at',{ascending:false}).limit(3),sb.from('centres').select('*').limit(1)]);
 for(var i=0;i<o.length;i++)if(o[i].error)throw o[i].error;
 HW=o[3].data.map(function(r){return r.text});CENTRE=o[4].data[0]||null;CFG={name:CENTRE?CENTRE.name:'',upi:CENTRE&&CENTRE.upi||'',collected:0};
 var built=o[0].data.map(function(x){return build(x,o[1].data,o[2].data,HW)});
-if(OWNER){S=built;if(CENTRE){var e=await Promise.all([sb.from('enquiries').select('*'),sb.from('payments').select('amount')]);
+if(OWNER){S=built;if(CENTRE&&!skipBill){var bu=billUpdates();if(bu.n){var br=await Promise.all(bu.q),be=br.filter(function(r){return r.error})[0];if(be)toast('Billing update failed. Run the latest SQL. '+be.error.message);else{toast('Monthly fees added for '+bu.n+' students');return loadAll(true)}}}if(CENTRE){var e=await Promise.all([sb.from('enquiries').select('*'),sb.from('payments').select('amount')]);
 ENQ=(e[0].data||[]).map(function(r){return {id:r.id,n:r.child_name,cls:r.class||'—',by:r.referred_by||'—',ph:r.phone,st:r.status}});CFG.collected=(e[1].data||[]).reduce(function(a,r){return a+r.amount},0)}}else KIDS=built;
 }catch(e){toast('Could not load data. '+(e.message||''))}
 LOADED=true;render()}
@@ -249,7 +249,7 @@ h+='<div class="grid"><div class="card"><div class="num">'+S.length+'</div><div 
 h+='<h2 style="margin-top:16px">Referral enquiries</h2><div class="card">';if(!ENQ.length)h+='<p class="mute">No enquiries yet.</p>';
 ENQ.forEach(function(r){h+='<div class="row"><div><b>'+esc(r.n)+'</b><div class="mute">'+esc(r.cls)+' · via '+esc(r.by)+'</div></div><div style="text-align:right"><span class="chip'+(r.st==='New'?' red':' green')+'">'+esc(r.st)+'</span><div style="margin-top:6px"><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(r.ph,'Hello! Thank you for your interest in '+cname()+'. When can we schedule a free demo class for '+r.n+'?')+'" onclick="enqDone(\''+r.id+'\')">WhatsApp</a></div></div></div>'});
 h+='</div><button class="ghost" onclick="addEnq()">Add enquiry</button><h2 style="margin-top:16px">Students</h2><div class="card">';
-S.forEach(function(s){h+='<div class="row"><div><b>'+esc(s.n)+'</b><div class="mute">'+esc(s.par)+' · '+inr(s.monthly)+'/month</div></div><span><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(s.ph,'Dear '+s.par+', you can see '+s.n+'’s attendance, homework and fees on TuitionDesk: '+url+' . Choose Parent and log in with this mobile number.')+'">Invite</a> <button class="small ghost" onclick="editFee(\''+s.id+'\')">Edit</button></span></div>'});
+S.forEach(function(s){h+='<div class="row"><div><b>'+esc(s.n)+'</b><div class="mute">'+esc(s.par)+' · '+inr(s.monthly)+'/month · '+(s.join?'due on day '+dayOf(s):'set joining date')+'</div></div><span><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(s.ph,'Dear '+s.par+', you can see '+s.n+'’s attendance, homework and fees on TuitionDesk: '+url+' . Choose Parent and log in with this mobile number.')+'">Invite</a> <button class="small ghost" onclick="editFee(\''+s.id+'\')">Edit</button></span></div>'});
 if(!S.length)h+='<p class="mute">No students yet.</p>';
 return h+'</div><button onclick="addStudent()" style="margin-bottom:8px">Add student</button><button class="ghost" style="margin-bottom:8px" onclick="postHW()">Post homework to all</button><button class="ghost" style="margin-bottom:8px" onclick="settings()">Centre name and UPI ID</button>'+demoBtn()}
 
@@ -277,7 +277,7 @@ function demoBtn(){return hasDemo()?'<button class="ghost" onclick="removeDemo()
 async function seedDemo(){if(!confirm('Add 10 demo students with sample fees, attendance and test scores?'))return;
 var D=[['Aarav Mehta','Mr. Mehta',2500,22,21,[34,38,36,41,39,44]],['Diya Nair','Mrs. Nair',2500,15,23,[40,42,45,44,46,48]],['Kabir Singh','Mr. Singh',5000,29,17,[28,30,27,33,31,35]],['Ananya Iyer','Mrs. Iyer',0,0,24,[44,46,47,45,48,49]],['Rohan Gupta','Mr. Gupta',2500,7,20,[31,33,35,32,36,37]],['Ishita Verma','Mrs. Verma',0,0,22,[38,39,42,43,41,45]],['Vihaan Patel','Mr. Patel',2500,3,19,[25,29,31,30,34,36]],['Saanvi Reddy','Mrs. Reddy',0,0,23,[42,41,44,46,45,47]],['Arjun Das','Mr. Das',5000,26,18,[22,26,25,29,28,32]],['Meera Joshi','Mrs. Joshi',0,0,22,[36,37,40,39,42,43]]];
 var cid=CENTRE.id;
-try{var r=await sb.from('students').insert(D.map(function(x,i){return {centre_id:cid,name:x[0],parent_name:x[1],parent_phone:'9198765000'+(10+i),fee_pending:x[2],fee_due:x[2]?iso(x[3]):null,monthly_fee:2500,due_day:5}})).select('id');
+try{var r=await sb.from('students').insert(D.map(function(x,i){return {centre_id:cid,name:x[0],parent_name:x[1],parent_phone:'9198765000'+(10+i),fee_pending:x[2],fee_due:x[2]?iso(x[3]):null,monthly_fee:2500,join_date:x[2]?iso(x[3]):iso(40+i*3),last_billed:x[2]?iso(x[3]):latestCyc(iso(40+i*3))}})).select('id');
 if(r.error)throw r.error;
 var att=[],sc=[],pay=[];
 r.data.forEach(function(s,i){var x=D[i];for(var k=1;k<=24;k++)att.push({centre_id:cid,student_id:s.id,day:iso(k),present:k>24-x[4]});
@@ -311,6 +311,27 @@ async function doEditFee(id){var mf=Math.max(0,+$('m1').value||0),dd=Math.min(28
 async function bulkFee(){var v=prompt('Monthly fee for ALL students (₹)');if(v===null)return;v=Math.max(0,parseInt(v,10)||0);if(!v){toast('Enter a valid amount');return}
 if(await w([sb.from('students').update({monthly_fee:v}).eq('centre_id',CENTRE.id)]))toast('Monthly fee set for all students')}
 function demoBtn(){return '<button class="ghost" style="margin-bottom:8px" onclick="bulkFee()">Set monthly fee for all students</button>'+(hasDemo()?'<button class="ghost" onclick="removeDemo()">Remove demo students</button>':'<button class="ghost" onclick="seedDemo()">Load demo students</button>')}
+
+/* Billing on each student's joining-date day */
+function dayOf(s){return s.join?+s.join.slice(8,10):0}
+function ymd(y,m,d){return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0')}
+function cyc(join,y,m){var dim=new Date(y,m+1,0).getDate();return ymd(y,m,Math.min(+join.slice(8,10),dim))}
+function nextCyc(x){if(!x.lastBilled)return x.join;var d=new Date(+x.lastBilled.slice(0,4),+x.lastBilled.slice(5,7),1);return cyc(x.join,d.getFullYear(),d.getMonth())}
+function latestCyc(join){var t=today(),x={join:join,lastBilled:''},n=nextCyc(x),last=null,g=0;while(n<=t&&g++<600){last=n;x.lastBilled=n;n=nextCyc(x)}return last}
+function billUpdates(){var q=[],n=0,t=today();
+S.forEach(function(s){if(!(s.monthly>0)||!s.join)return;var c=0,first=null,last=null,x={join:s.join,lastBilled:s.lastBilled},nx=nextCyc(x),g=0;
+while(nx<=t&&g++<600){if(!first)first=nx;last=nx;c++;x.lastBilled=nx;nx=nextCyc(x)}
+if(!c)return;n++;var u=sb.from('students').update({fee_pending:s.fee+c*s.monthly,fee_due:(s.fee>0&&s.due)?s.due:first,last_billed:last}).eq('id',s.id);
+q.push(s.lastBilled?u.eq('last_billed',s.lastBilled):u.is('last_billed',null))});
+return {q:q,n:n}}
+function addStudent(){sheet('Add student','<div class="card"><label class="mute" for="f1">Student name</label><input id="f1"><label class="mute" for="f2">Parent name</label><input id="f2"><label class="mute" for="f3">Parent WhatsApp number (10 digits)</label><input id="f3" type="tel" inputmode="numeric" maxlength="10"><label class="mute" for="f6">Monthly fee (₹)</label><input id="f6" type="number" inputmode="numeric"><label class="mute" for="f8">Joining date (fee is due on this day every month)</label><input id="f8" type="date" value="'+today()+'"><label class="mute" for="f9">First month’s fee</label><select id="f9"><option value="due">Due now</option><option value="paid">Already paid</option></select></div><button onclick="doAdd()">Save student</button>')}
+async function doAdd(){var n=$('f1').value.trim(),par=$('f2').value.trim(),ph=$('f3').value.replace(/\D/g,''),mf=Math.max(0,+$('f6').value||0),jd=$('f8').value,paid=$('f9').value==='paid';
+if(!n||!par||ph.length!==10){toast('Enter name, parent name and a 10-digit number');return}if(!jd){toast('Pick the joining date');return}if(!mf){toast('Enter the monthly fee');return}
+if(await w([sb.from('students').insert({centre_id:CENTRE.id,name:n,parent_name:par,parent_phone:'91'+ph,fee_pending:0,fee_due:null,monthly_fee:mf,join_date:jd,last_billed:paid?jd:null})])){closeSheet();toast('Student added')}}
+function editFee(id){var s=sById(id);if(!s)return;sheet('Fee settings · '+esc(s.n),'<div class="card"><label class="mute" for="m1">Monthly fee (₹)</label><input id="m1" type="number" inputmode="numeric" value="'+s.monthly+'"><label class="mute" for="m3">Joining date (fee is due on this day every month)</label><input id="m3" type="date" value="'+esc(s.join)+'"><label class="mute" for="m4">Billing</label><select id="m4"><option value="next">Start from the next due date</option><option value="join">Bill from the joining date</option></select></div><button onclick="doEditFee(\''+id+'\')">Save</button>')}
+async function doEditFee(id){var s=sById(id),mf=Math.max(0,+$('m1').value||0),jd=$('m3').value,row={monthly_fee:mf};
+if(jd&&(jd!==s.join||!s.lastBilled)){row.join_date=jd;row.last_billed=$('m4').value==='join'?null:latestCyc(jd)}
+if(await w([sb.from('students').update(row).eq('id',id)])){closeSheet();toast('Saved')}}
 (function(){if(!window.supabase){render();return}
 sb=supabase.createClient(SB_URL,SB_KEY);DB=sb;
 sb.auth.onAuthStateChange(function(ev,ses){USER=ses?ses.user:null;OWNER=!!(USER&&USER.email);LOADED=false;S=[];KIDS=[];st.tab=OWNER?'fees':'parent';render();if(USER)setTimeout(loadAll,0)});
