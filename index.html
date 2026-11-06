@@ -214,7 +214,7 @@ var o=await Promise.all([sb.from('students').select('*').order('name'),allRows('
 for(var i=0;i<o.length;i++)if(o[i].error)throw o[i].error;
 ATTR=o[1].data;HWR=o[3].data;HW=HWR.map(function(r){return r.text});BATCHES=o[5].data||[];CENTRE=o[4].data[0]||null;CFG={name:CENTRE?CENTRE.name:'',upi:CENTRE&&CENTRE.upi||'',collected:0};
 var built=o[0].data.map(function(x){return build(x,o[1].data,o[2].data,HWR.filter(function(r){return !r.batch_id||r.batch_id===x.batch_id}).map(function(r){return r.text}).slice(0,3))});
-if(st.bf!=='all'&&st.bf!=='none'&&!BATCHES.some(function(b){return b.id===st.bf}))st.bf='all';if(OWNER){ALLS=built;S=built.filter(inB);if(CENTRE){var e=await Promise.all([sb.from('enquiries').select('*'),sb.from('payments').select('student_id,amount')]);
+if(st.bf!=='all'&&st.bf!=='none'&&!BATCHES.some(function(b){return b.id===st.bf}))st.bf='all';if(OWNER){ARCH=built.filter(function(x){return x.active===false});ALLS=built.filter(function(x){return x.active!==false});S=ALLS.filter(inB);if(CENTRE){var e=await Promise.all([sb.from('enquiries').select('*'),sb.from('payments').select('student_id,amount')]);
 ENQ=(e[0].data||[]).map(function(r){return {id:r.id,n:r.child_name,cls:r.class||'—',by:r.referred_by||'—',ph:r.phone,st:r.status}});PAY=e[1].data||[];CFG.collected=(e[1].data||[]).reduce(function(a,r){return a+r.amount},0)}}else KIDS=built;
 }catch(e){toast('Could not load data. '+(e.message||''))}
 LOADED=true;render()}
@@ -290,7 +290,7 @@ async function removeDemo(){if(!confirm('Remove the demo students and their data
 if(await w([sb.from('students').delete().like('parent_phone','9198765000%'),sb.from('enquiries').delete().like('phone','9198111000%'),sb.from('batches').delete().like('name','Demo ·%')]))toast('Demo data removed')}
 
 /* Monthly fees */
-function sById(id){return ALLS.filter(function(x){return x.id===id})[0]}
+function sById(id){return ALLS.concat(ARCH).filter(function(x){return x.id===id})[0]}
 function addStudent(){sheet('Add student','<div class="card"><label class="mute" for="f1">Student name</label><input id="f1"><label class="mute" for="f2">Parent name</label><input id="f2"><label class="mute" for="f3">Parent WhatsApp number (10 digits)</label><input id="f3" type="tel" inputmode="numeric" maxlength="10"><label class="mute" for="f6">Monthly fee (₹)</label><input id="f6" type="number" inputmode="numeric"><label class="mute" for="f7">Fee due day of month (1–28)</label><input id="f7" type="number" inputmode="numeric" value="5"><label class="mute" for="f4">Fee pending right now (₹, 0 if none)</label><input id="f4" type="number" inputmode="numeric" value="0"><label class="mute" for="f5">Due date of that pending fee</label><input id="f5" type="date"></div><button onclick="doAdd()">Save student</button>')}
 async function doAdd(){var n=$('f1').value.trim(),par=$('f2').value.trim(),ph=$('f3').value.replace(/\D/g,''),fee=+$('f4').value||0,due=$('f5').value,mf=Math.max(0,+$('f6').value||0),dd=Math.min(28,Math.max(1,+$('f7').value||5));
 if(!n||!par||ph.length!==10){toast('Enter name, parent name and a 10-digit number');return}if(fee>0&&!due){toast('Pick the due date of the pending fee');return}
@@ -403,7 +403,7 @@ async function doHW(){var t=$('hw').value.trim();if(!t){toast('Write the homewor
 function owner(){var keep=S,h;S=ALLS;try{h=ownerOld()}finally{S=keep}return h.replace('<h2 style="margin-top:16px">Students</h2>',batchSection()+'<h2 style="margin-top:16px">Students</h2>')}
 
 /* Edit / delete student */
-function editFee(id){var s=sById(id);if(!s)return;sheet('Edit · '+esc(s.n),'<div class="card"><label class="mute" for="m7">Student name</label><input id="m7" value="'+esc(s.n)+'"><label class="mute" for="m8">Parent name</label><input id="m8" value="'+esc(s.par)+'"><label class="mute" for="m9">Parent WhatsApp number (10 digits)</label><input id="m9" type="tel" inputmode="numeric" maxlength="10" value="'+esc(String(s.ph).slice(-10))+'"><label class="mute" for="m6">Batch</label><select id="m6">'+bOpts(s.batchId)+'</select><label class="mute" for="m1">Monthly fee (₹)</label><input id="m1" type="number" inputmode="numeric" value="'+s.monthly+'"><label class="mute" for="m3">Joining date</label><input id="m3" type="date" value="'+esc(s.join)+'"><label class="mute" for="m5">Next fee due date</label><input id="m5" type="date" value="'+(s.nextDue||afterToday(s.join))+'"></div><button onclick="doEditFee(\''+id+'\')">Save</button><button class="ghost" style="margin-top:8px;color:var(--red)" onclick="delStudent(\''+id+'\')">Delete student</button>')}
+function editFee(id){var s=sById(id);if(!s)return;sheet('Edit · '+esc(s.n),'<div class="card"><label class="mute" for="m7">Student name</label><input id="m7" value="'+esc(s.n)+'"><label class="mute" for="m8">Parent name</label><input id="m8" value="'+esc(s.par)+'"><label class="mute" for="m9">Parent WhatsApp number (10 digits)</label><input id="m9" type="tel" inputmode="numeric" maxlength="10" value="'+esc(String(s.ph).slice(-10))+'"><label class="mute" for="m6">Batch</label><select id="m6">'+bOpts(s.batchId)+'</select><label class="mute" for="m1">Monthly fee (₹)</label><input id="m1" type="number" inputmode="numeric" value="'+s.monthly+'"><label class="mute" for="m3">Joining date</label><input id="m3" type="date" value="'+esc(s.join)+'"><label class="mute" for="m5">Next fee due date</label><input id="m5" type="date" value="'+(s.nextDue||afterToday(s.join))+'"></div><button onclick="doEditFee(\''+id+'\')">Save</button><button class="ghost" style="margin-top:8px" onclick="archiveStudent(\''+id+'\')">Archive student (inactive)</button><button class="ghost" style="margin-top:8px;color:var(--red)" onclick="delStudent(\''+id+'\')">Delete student</button>')}
 async function doEditFee(id){var n=$('m7').value.trim(),par=$('m8').value.trim(),ph=$('m9').value.replace(/\D/g,''),mf=Math.max(0,+$('m1').value||0),jd=$('m3').value,nd=$('m5').value;
 if(!n||!par||ph.length!==10){toast('Enter name, parent name and a 10-digit number');return}if(!jd||!nd){toast('Pick the joining date and the next due date');return}
 if(await w([sb.from('students').update({name:n,parent_name:par,parent_phone:'91'+ph,monthly_fee:mf,join_date:jd,next_due:nd,batch_id:$('m6').value||null}).eq('id',id)])){closeSheet();toast('Saved')}}
@@ -448,6 +448,34 @@ h+='<p class="mute" style="margin-bottom:8px">'+p+' of '+L.length+' recent days 
 L.forEach(function(r){h+='<div class="row"><span>'+dfmt(r.day)+'</span><span class="chip'+(r.present?' green':' red')+'">'+(r.present?'Present':'Absent')+'</span></div>'});if(!L.length)h+='<p class="mute">No records yet.</p>';h+='</div>'}
 sheet('Attendance history',h)}
 
+
+/* ===== Archive (Active / Inactive) ===== */
+var ARCH=[];
+var buildPrev=build;build=function(x,att,sc,hw){var o=buildPrev(x,att,sc,hw);o.active=x.active!==false;if(!o.active){o.fee=0;o.due=''}return o};
+function archiveStudent(id){var s=sById(id);if(!s)return;if(!confirm('Archive '+s.n+'? They will be hidden from fees, attendance, tests and announcements. All their records are kept and you can restore them anytime.'))return;
+w([sb.from('students').update({active:false}).eq('id',id)]).then(function(ok){if(ok){closeSheet();toast('Student archived')}})}
+function restoreSheet(id){var s=sById(id);if(!s)return;sheet('Restore · '+esc(s.n),'<p class="mute" style="margin-bottom:8px">No fees are charged for the months they were archived. Choose their next fee due date.</p><div class="card"><label class="mute" for="rd">Next fee due date</label><input id="rd" type="date" value="'+afterToday(s.join)+'"></div><button onclick="doRestore(\''+id+'\')">Restore student</button>')}
+async function doRestore(id){var d=$('rd').value;if(!d){toast('Pick the next due date');return}if(await w([sb.from('students').update({active:true,next_due:d,paid_part:0}).eq('id',id)])){closeSheet();toast('Student restored')}}
+function archSection(){if(!ARCH.length)return '';var h='<h2 style="margin-top:16px">Archived students ('+ARCH.length+')</h2><div class="card">';
+ARCH.forEach(function(s){h+='<div class="row"><div><b>'+esc(s.n)+'</b> <span class="chip">Inactive</span><div class="mute">'+esc(s.par)+' · '+esc(bName(s.batchId))+'</div></div><button class="small ghost" onclick="restoreSheet(\''+s.id+'\')">Restore</button></div>'});return h+'</div>'}
+
+/* ===== Batch announcement ===== */
+function annTpl(){var t=$('at').value,b=$('ab').value,bl=b?bName(b):'all batches',d=$('ad2').value,
+dl=d?new Date(d).toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'}):'[date]',
+T={holiday:'There will be no class on '+dl+' for '+bl+'. Regular classes will resume after that.',timing:'The timing of '+bl+' has changed to [new time] from '+dl+'. Please note.',test:'A test for '+bl+' is scheduled on '+dl+'. Please make sure your child is prepared.',custom:''};
+$('am').value=T[t]||''}
+function announceSheet(){if(!ALLS.length){toast('Add students first');return}
+sheet('Announcement','<div class="card"><label class="mute" for="ab">Send to</label><select id="ab" onchange="annTpl()"><option value="">All batches</option>'+BATCHES.map(function(b){return '<option value="'+b.id+'"'+(st.bf===b.id?' selected':'')+'>'+esc(b.name)+'</option>'}).join('')+'</select><label class="mute" for="at">Message type</label><select id="at" onchange="annTpl()"><option value="holiday">Holiday</option><option value="timing">Timing change</option><option value="test">Test notice</option><option value="custom">Other message</option></select><label class="mute" for="ad2">Date</label><input id="ad2" type="date" value="'+iso(-1)+'" onchange="annTpl()"><label class="mute" for="am">Message (you can edit it)</label><textarea id="am" rows="4"></textarea></div><button onclick="annSend()">Prepare messages</button>');annTpl()}
+function annSend(){var body=$('am').value.trim(),b=$('ab').value;if(!body){toast('Write the message first');return}
+var L=ALLS.filter(function(s){return !b||s.batchId===b}),by={},order=[];if(!L.length){toast('No students in this batch');return}
+L.forEach(function(s){if(!by[s.ph]){by[s.ph]={par:s.par,kids:[]};order.push(s.ph)}by[s.ph].kids.push(s.n.split(' ')[0])});
+var h='<p class="mute" style="margin-bottom:8px">'+order.length+' parents. WhatsApp opens one chat at a time. Tap Send for each parent.</p><div class="card">';
+order.forEach(function(ph){var g=by[ph];h+='<div class="row"><div><b>'+esc(g.par)+'</b><div class="mute">'+esc(g.kids.join(', '))+'</div></div><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(ph,'Dear '+g.par+',\n'+body+'\n\n— '+cname())+'" onclick="sentLink(this)">Send</a></div>'});
+sheet('Send announcement',h+'</div>')}
+
+function owner(){var keep=S,h;S=ALLS;try{h=ownerOld()}finally{S=keep}
+h=h.replace('<h2 style="margin-top:16px">Referral enquiries</h2>','<button class="ghost" style="margin-top:12px" onclick="announceSheet()">Send announcement</button><h2 style="margin-top:16px">Referral enquiries</h2>');
+return h.replace('<h2 style="margin-top:16px">Students</h2>',batchSection()+'<h2 style="margin-top:16px">Students</h2>')+archSection()}
 (function(){if(!window.supabase){render();return}
 sb=supabase.createClient(SB_URL,SB_KEY);DB=sb;
 sb.auth.onAuthStateChange(function(ev,ses){if(ev==='PASSWORD_RECOVERY')st.recovery=1;USER=ses?ses.user:null;OWNER=!!(USER&&USER.email);LOADED=false;S=[];KIDS=[];st.tab=OWNER?'fees':'parent';render();if(USER)setTimeout(loadAll,0)});
