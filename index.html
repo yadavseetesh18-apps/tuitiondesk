@@ -210,9 +210,9 @@ function signOut(){sb.auth.signOut()}
 /* Load data */
 function build0(x,att,sc,hw){var a=att.filter(function(r){return r.student_id===x.id});return {id:x.id,n:x.name,par:x.parent_name,ph:x.parent_phone,fee:x.fee_pending||0,due:x.fee_due||'',monthly:x.monthly_fee||0,dueDay:x.due_day||5,join:x.join_date||'',lastBilled:x.last_billed||'',att:[a.filter(function(r){return r.present}).length,a.length],sc:sc.filter(function(r){return r.student_id===x.id}).map(function(r){return r.score}).slice(-6),hw:hw}}
 async function loadAll(skipBill){try{
-var o=await Promise.all([sb.from('students').select('*').order('name'),allRows('attendance','student_id,present,day','day'),sb.from('test_scores').select('student_id,score').order('test_date',{ascending:true}),sb.from('homework').select('text,batch_id').order('created_at',{ascending:false}).limit(30),sb.from('centres').select('*').limit(1),sb.from('batches').select('*').order('name')]);
-for(var i=0;i<o.length;i++)if(o[i].error)throw o[i].error;
-ATTR=o[1].data;HWR=o[3].data;HW=HWR.map(function(r){return r.text});BATCHES=o[5].data||[];CENTRE=o[4].data[0]||null;CFG={name:CENTRE?CENTRE.name:'',upi:CENTRE&&CENTRE.upi||'',collected:0};
+var o=await Promise.all([sb.from('students').select('*').order('name'),allRows('attendance','student_id,present,day','day'),allRows('test_scores','*','test_date'),sb.from('homework').select('id,text,batch_id,created_at').order('created_at',{ascending:false}).limit(30),sb.from('centres').select('*').limit(1),sb.from('batches').select('*').order('name'),allRows('homework_status','*','created_at')]);
+for(var i=0;i<o.length;i++)if(o[i].error&&i!==6)throw o[i].error;
+ATTR=o[1].data;SCR=o[2].data;HWS=(o[6]&&!o[6].error)?(o[6].data||[]):[];HWR=o[3].data;HW=HWR.map(function(r){return r.text});BATCHES=o[5].data||[];CENTRE=o[4].data[0]||null;CFG={name:CENTRE?CENTRE.name:'',upi:CENTRE&&CENTRE.upi||'',collected:0};
 var built=o[0].data.map(function(x){return build(x,o[1].data,o[2].data,HWR.filter(function(r){return !r.batch_id||r.batch_id===x.batch_id}).map(function(r){return r.text}).slice(0,3))});
 if(st.bf!=='all'&&st.bf!=='none'&&!BATCHES.some(function(b){return b.id===st.bf}))st.bf='all';if(OWNER){ARCH=built.filter(function(x){return x.active===false});ALLS=built.filter(function(x){return x.active!==false});S=ALLS.filter(inB);if(CENTRE){var e=await Promise.all([sb.from('enquiries').select('*'),sb.from('payments').select('student_id,amount')]);
 ENQ=(e[0].data||[]).map(function(r){return {id:r.id,n:r.child_name,cls:r.class||'—',by:r.referred_by||'—',ph:r.phone,st:r.status}});PAY=e[1].data||[];CFG.collected=(e[1].data||[]).reduce(function(a,r){return a+r.amount},0)}}else KIDS=built;
@@ -379,9 +379,9 @@ if(!ids.length)h+='<div class="card"><p class="mute">No batches yet. Add one to 
 ids.forEach(function(id){var b=bById(id),t=bStats(id);h+='<div class="card" role="button" tabindex="0" style="cursor:pointer" onclick="bDetail(\''+id+'\')"><div class="row" style="border:0;margin:0;padding:0"><div><b>'+esc(b?b.name:'No batch')+'</b><div class="mute">'+esc(b&&b.timing||'')+'</div></div><span class="chip">'+t.n+' students</span></div><div class="row"><span class="mute">Fees pending</span><b>'+inr(t.pend)+'</b></div><div class="row"><span class="mute">Collected</span><b>'+inr(t.col)+'</b></div><div class="row"><span class="mute">Attendance</span><b>'+t.ap+'%</b></div></div>'});
 return h+'<button class="ghost" style="margin-bottom:8px" onclick="editBatch()">Add batch</button>'}
 function bDetail(id){var b=bById(id),t=bStats(id),r=function(l,v){return '<div class="row"><span class="mute">'+l+'</span><b>'+v+'</b></div>'};
-var h='<div class="card">'+r('Timing',esc(b&&b.timing||'—'))+r('Students',t.n)+r('Default monthly fee',b?inr(b.monthly_fee):'—')+r('Monthly fees expected',inr(t.exp))+r('Fees pending',inr(t.pend)+' ('+t.dueN+' due)')+r('Collected so far',inr(t.col))+r('Average attendance',t.ap+'%')+r('Average last test',t.avg+'/'+MAX)+r('Top scorer',t.top?esc(t.top.n)+' ('+lastSc(t.top)+')':'—')+'</div><div class="card"><h3>Students</h3>';
+var h='<div class="card">'+r('Timing',esc(b&&b.timing||'—'))+r('Students',t.n)+r('Default monthly fee',b?inr(b.monthly_fee):'—')+r('Monthly fees expected',inr(t.exp))+r('Fees pending',inr(t.pend)+' ('+t.dueN+' due)')+r('Collected so far',inr(t.col))+r('Average attendance',t.ap+'%')+r('Average last test',t.avg+'%')+r('Top scorer',t.top?esc(t.top.n)+' ('+lastSc(t.top)+'%)':'—')+'</div><div class="card"><h3>Students</h3>';
 if(!t.L.length)h+='<p class="mute">No students in this batch yet.</p>';
-t.L.forEach(function(s){h+='<div class="row"><div><b>'+esc(s.n)+'</b> <span class="chip'+(s.fee>0?' red':' green')+'">'+(s.fee>0?'Due':'Clear')+'</span><div class="mute">Attendance '+(s.att[1]?Math.round(s.att[0]/s.att[1]*100)+'%':'—')+' · Last test '+(s.sc.length?lastSc(s)+'/'+MAX:'—')+'</div></div><b>'+(s.fee>0?inr(s.fee):'')+'</b></div>'});
+t.L.forEach(function(s){h+='<div class="row"><div><b>'+esc(s.n)+'</b> <span class="chip'+(s.fee>0?' red':' green')+'">'+(s.fee>0?'Due':'Clear')+'</span><div class="mute">Attendance '+(s.att[1]?Math.round(s.att[0]/s.att[1]*100)+'%':'—')+' · Last test '+(s.sp&&s.sp.length?lastSc(s)+'%':'—')+'</div></div><b>'+(s.fee>0?inr(s.fee):'')+'</b></div>'});
 h+='</div><button style="margin-bottom:8px" onclick="closeSheet();setFilter(\''+id+'\');go(\'fees\')">Open fees</button><button class="ghost" style="margin-bottom:8px" onclick="closeSheet();setFilter(\''+id+'\');go(\'att\')">Take attendance</button>'+(b?'<button class="ghost" style="margin-bottom:8px" onclick="editBatch(\''+id+'\')">Edit batch</button>':'');
 sheet(esc(b?b.name:'No batch'),h)}
 function editBatch(id){var b=id?bById(id):null;sheet(b?'Edit batch':'Add batch','<div class="card"><label class="mute" for="b1">Batch name</label><input id="b1" value="'+esc(b?b.name:'')+'" placeholder="Class 9 Maths"><label class="mute" for="b2">Timing</label><input id="b2" value="'+esc(b&&b.timing||'')+'" placeholder="Mon–Fri 5:00 PM"><label class="mute" for="b3">Default monthly fee (₹)</label><input id="b3" type="number" inputmode="numeric" value="'+(b?b.monthly_fee:'')+'"></div><button onclick="doBatch(\''+(b?b.id:'')+'\')">Save batch</button>'+(b?'<button class="ghost" style="margin-top:8px" onclick="delBatch(\''+b.id+'\')">Delete batch</button>':''))}
@@ -427,7 +427,7 @@ if(st.attFor!==d){st.att={};ATTR.filter(function(r){return r.day===d}).forEach(f
 var h='<h2>'+BATCH+'</h2><div class="card"><label class="mute" for="ad">Date</label><input id="ad" type="date" max="'+today()+'" value="'+d+'" onchange="setAttDate(this.value)"></div><div class="card">';
 S.forEach(function(s){var v=st.att[s.id];h+='<div class="row"><b>'+esc(s.n)+'</b><div class="pa"><button class="p'+(v==='P'?' on':'')+'" aria-label="Present" onclick="mark(\''+s.id+'\',\'P\')">P</button><button class="a'+(v==='A'?' on':'')+'" aria-label="Absent" onclick="mark(\''+s.id+'\',\'A\')">A</button></div></div>'});
 var m=S.filter(function(s){return st.att[s.id]}).length;
-return h+'</div><button onclick="saveAtt()" style="margin-bottom:8px">Save attendance ('+m+'/'+S.length+' marked)</button><button class="ghost" onclick="attHistory()">Attendance history</button>'}
+return h+'</div><button onclick="saveAtt()" style="margin-bottom:8px">Save attendance ('+m+'/'+S.length+' marked)</button><button class="ghost" onclick="attHistory()" style="margin-bottom:8px">Attendance history</button><button class="ghost" onclick="hwCheck()">Homework check</button>'}
 function setAttDate(d){if(!d||d>today()){toast('Pick a date up to today');return}st.ad=d;render()}
 async function saveAtt(){var un=S.filter(function(s){return !st.att[s.id]});if(un.length){toast('Mark all students first: '+un.length+' left');return}var d=st.ad||today();
 var ab=S.filter(function(s){return st.att[s.id]==='A'}),rows=S.map(function(s){return {centre_id:CENTRE.id,student_id:s.id,day:d,present:st.att[s.id]==='P'}});
@@ -475,6 +475,76 @@ sheet('Send announcement',h+'</div>')}
 
 function owner(){var keep=S,h;S=ALLS;try{h=ownerOld()}finally{S=keep}
 h=h.replace('<h2 style="margin-top:16px">Referral enquiries</h2>','<button class="ghost" style="margin-top:12px" onclick="announceSheet()">Send announcement</button><h2 style="margin-top:16px">Referral enquiries</h2>');
+return h.replace('<h2 style="margin-top:16px">Students</h2>',batchSection()+'<h2 style="margin-top:16px">Students</h2>')+archSection()}
+
+/* ===== Tests: out-of-marks + edit tests; Homework check (done / not done) ===== */
+var SCR=[],HWS=[],TG=[];st.hwm={};
+var buildPrev2=build;build=function(x,att,sc,hw){var o=buildPrev2(x,att,sc,hw);var rows=sc.filter(function(r){return r.student_id===x.id});o.srows=rows;o.sp=rows.map(function(r){return Math.round(r.score/(r.max_score||50)*100)});return o};
+function lastSc(s){return (s.sp&&s.sp.length)?s.sp[s.sp.length-1]:0}
+function tests(){var g=gate();if(g)return g;if(!S.length)return empty();var s=me(),rows=s.srows||[],sp=s.sp||[],last=rows[rows.length-1],d=sp.length>1?sp[sp.length-1]-sp[sp.length-2]:0;
+var h='<div class="chips">';S.forEach(function(x){h+='<button class="'+(s.id===x.id?'on':'')+'" onclick="st.sel=\''+x.id+'\';render()">'+esc(x.n.split(' ')[0])+'</button>'});h+='</div>';
+if(last)h+='<div class="card hero"><small>'+esc(s.n)+' · '+esc(last.subject||'Latest test')+' · '+dfmt(last.test_date)+'</small><div class="row" style="border:0;margin:0;padding:0"><div class="num">'+last.score+'/'+(last.max_score||50)+'</div><div style="text-align:right"><div class="num">#'+rank(s)+'</div><small>of '+S.length+' in class</small></div></div><small>'+(sp.length>1?(d>=0?'Up ':'Down ')+Math.abs(d)+' percentage points from the previous test':'First test recorded')+'</small></div>';
+else h+='<div class="card hero"><small>'+esc(s.n)+'</small><div class="num">No tests yet</div><small>Enter scores to see rank and chart</small></div>';
+h+='<div class="card"><h3>Last 6 tests (%)</h3><div class="bars">';
+sp.slice(-6).forEach(function(v,i,a){var r=rows[rows.length-a.length+i];h+='<div class="c'+(i===a.length-1?' last':'')+'"><b>'+v+'</b><i style="height:'+Math.max(2,v)+'%"></i>'+esc(r&&r.subject?r.subject.slice(0,4):'T'+(rows.length-a.length+i+1))+'</div>'});
+if(!sp.length)h+='<p class="mute">No scores yet.</p>';
+h+='</div></div>';
+if(rows.length){h+='<div class="card"><h3>Recent tests</h3>';rows.slice(-4).reverse().forEach(function(r){h+='<div class="row"><span>'+esc(r.subject||'Test')+' <span class="mute">'+dfmt(r.test_date)+'</span></span><b>'+r.score+'/'+(r.max_score||50)+'</b></div>'});h+='</div>'}
+var msg=cname()+' · Test report\n'+s.n+(last?'\n'+(last.subject||'Test')+': '+last.score+'/'+(last.max_score||50)+' ('+lastSc(s)+'%)\nRank: '+rank(s)+' of '+S.length+'\nLast tests: '+sp.slice(-6).join('%, ')+'%':'\nNo tests yet');
+return h+'<a class="btn wa" target="_blank" rel="noopener" style="margin-bottom:8px" href="'+wa(s.ph,msg)+'">Share report on WhatsApp</a><button style="margin-bottom:8px" onclick="addScores()">Enter test scores</button><button class="ghost" onclick="editTests()">Edit tests (marks, date, scores)</button>'}
+function addScores(){var h='<div class="card"><label class="mute" for="ts">Subject</label><input id="ts" placeholder="Maths"><label class="mute" for="tm">Total marks (out of)</label><input id="tm" type="number" inputmode="numeric" value="50"><label class="mute" for="td">Test date</label><input id="td" type="date" max="'+today()+'" value="'+today()+'"></div><p class="mute" style="margin-bottom:8px">Marks scored. Leave blank to skip a student.</p><div class="card">';
+S.forEach(function(s){h+='<div class="row"><label for="sc_'+s.id+'">'+esc(s.n)+'</label><input id="sc_'+s.id+'" type="number" inputmode="numeric" min="0" style="width:80px"></div>'});
+sheet('New test scores',h+'</div><button style="margin-top:10px" onclick="saveScores()">Save scores</button>')}
+async function saveScores(){var tot=+$('tm').value,subj=$('ts').value.trim()||null,dt=$('td').value||today(),rows=[];
+if(!(tot>=1)){toast('Enter the total marks');return}
+for(var k=0;k<S.length;k++){var s=S[k],v=$('sc_'+s.id).value;if(v!==''){if(+v>tot){toast('Score for '+s.n+' is higher than the total marks');return}rows.push({centre_id:CENTRE.id,student_id:s.id,score:Math.max(0,+v),max_score:tot,subject:subj,test_date:dt})}}
+if(!rows.length){toast('Enter at least one score');return}if(await w([sb.from('test_scores').insert(rows)])){closeSheet();toast('Scores saved')}}
+function testGroups(){var ids={};S.forEach(function(s){ids[s.id]=1});var g={},order=[];
+SCR.filter(function(r){return ids[r.student_id]}).forEach(function(r){var k=r.test_date+'|'+(r.subject||'')+'|'+(r.max_score||50);if(!g[k]){g[k]={date:r.test_date,subject:r.subject||'',max:r.max_score||50,rows:[]};order.push(k)}g[k].rows.push(r)});
+return order.map(function(k){return g[k]}).sort(function(a,b){return a.date<b.date?1:-1})}
+function editTests(){TG=testGroups().slice(0,30);var h='<p class="mute" style="margin-bottom:8px">Tap a test to change its subject, total marks, date or scores.</p><div class="card">';
+if(!TG.length)h+='<p class="mute">No tests yet.</p>';
+TG.forEach(function(g,i){h+='<div class="row" role="button" tabindex="0" style="cursor:pointer" onclick="editTest('+i+')"><div><b>'+esc(g.subject||'Test')+'</b><div class="mute">'+dfmt(g.date)+' · '+g.rows.length+' students</div></div><span class="chip">out of '+g.max+'</span></div>'});
+sheet('Edit tests',h+'</div>')}
+function editTest(i){var g=TG[i];if(!g)return;var by={};g.rows.forEach(function(r){by[r.student_id]=r});
+var h='<div class="card"><label class="mute" for="et1">Subject</label><input id="et1" value="'+esc(g.subject)+'"><label class="mute" for="et2">Total marks (out of)</label><input id="et2" type="number" inputmode="numeric" value="'+g.max+'"><label class="mute" for="et3">Test date</label><input id="et3" type="date" max="'+today()+'" value="'+esc(g.date)+'"></div><p class="mute" style="margin-bottom:8px">Scores. Change a box to correct it, or fill a blank box to add a student.</p><div class="card">';
+S.forEach(function(s){var r=by[s.id];h+='<div class="row"><label for="es_'+s.id+'">'+esc(s.n)+'</label><input id="es_'+s.id+'" type="number" inputmode="numeric" min="0" style="width:80px" value="'+(r?r.score:'')+'"></div>'});
+sheet('Edit test',h+'</div><button style="margin-top:10px;margin-bottom:8px" onclick="saveTest('+i+')">Save changes</button><button class="ghost" style="color:var(--red)" onclick="delTest('+i+')">Delete this test</button>')}
+async function saveTest(i){var g=TG[i];if(!g)return;var tot=+$('et2').value,subj=$('et1').value.trim()||null,dt=$('et3').value,q=[],by={};
+if(!(tot>=1)||!dt){toast('Enter the total marks and the date');return}g.rows.forEach(function(r){by[r.student_id]=r});
+for(var k=0;k<S.length;k++){var s=S[k],v=$('es_'+s.id).value,r=by[s.id];
+if(r){var sc=v===''?r.score:+v;if(sc>tot){toast('Score for '+s.n+' is higher than the total marks');return}q.push(sb.from('test_scores').update({score:Math.max(0,sc),max_score:tot,subject:subj,test_date:dt}).eq('id',r.id))}
+else if(v!==''){if(+v>tot){toast('Score for '+s.n+' is higher than the total marks');return}q.push(sb.from('test_scores').insert({centre_id:CENTRE.id,student_id:s.id,score:Math.max(0,+v),max_score:tot,subject:subj,test_date:dt}))}}
+if(await w(q)){closeSheet();toast('Test updated')}}
+async function delTest(i){var g=TG[i];if(!g||!confirm('Delete this test and all its scores? This cannot be undone.'))return;
+if(await w([sb.from('test_scores').delete().in('id',g.rows.map(function(r){return r.id}))])){closeSheet();toast('Test deleted')}}
+function bStats(id){var L=bStud(id),ids={},att=[0,0],sc=[],top=null,due=L.filter(function(s){return s.fee>0});L.forEach(function(s){ids[s.id]=1;att[0]+=s.att[0];att[1]+=s.att[1];if(s.sp&&s.sp.length){var v=lastSc(s);sc.push(v);if(!top||v>lastSc(top))top=s}});
+return {L:L,n:L.length,exp:L.reduce(function(a,s){return a+s.monthly},0),pend:due.reduce(function(a,s){return a+s.fee},0),dueN:due.length,col:PAY.filter(function(p){return ids[p.student_id]}).reduce(function(a,p){return a+p.amount},0),ap:att[1]?Math.round(att[0]/att[1]*100):0,avg:sc.length?Math.round(sc.reduce(function(a,b){return a+b},0)/sc.length):0,top:top}}
+
+function hwCheck(){var L=HWR.filter(function(x){return x.id}).slice(0,15);if(!L.length){toast('Post homework first (Owner tab)');return}
+var h='<p class="mute" style="margin-bottom:8px">Pick a homework to mark who did it.</p><div class="card">';
+L.forEach(function(x){h+='<div class="row"><div><b>'+esc(x.text.length>60?x.text.slice(0,60)+'…':x.text)+'</b><div class="mute">'+esc(x.batch_id?bName(x.batch_id):'All batches')+' · '+dfmt(String(x.created_at).slice(0,10))+'</div></div><button class="small ghost" onclick="hwMark(\''+x.id+'\',1)">Check</button></div>'});
+sheet('Homework check',h+'</div>')}
+function hwMark(id,fresh){var hw=HWR.filter(function(x){return x.id===id})[0];if(!hw)return;
+var L=ALLS.filter(function(s){return !hw.batch_id||s.batchId===hw.batch_id});
+if(fresh){st.hwm={};HWS.filter(function(r){return r.homework_id===id}).forEach(function(r){st.hwm[r.student_id]=r.done?'Y':'N'})}
+var y=0,n=0;L.forEach(function(s){if(st.hwm[s.id]==='Y')y++;else if(st.hwm[s.id]==='N')n++});
+var h='<p class="mute" style="margin-bottom:4px">'+esc(hw.text)+'</p><p class="mute" style="margin-bottom:8px">✓ '+y+' done · ✗ '+n+' not done · '+(L.length-y-n)+' not marked</p><div class="card">';
+L.forEach(function(s){var v=st.hwm[s.id];h+='<div class="row"><b>'+esc(s.n)+'</b><div class="pa"><button class="p'+(v==='Y'?' on':'')+'" aria-label="Done" onclick="hwSet(\''+id+'\',\''+s.id+'\',\'Y\')">✓</button><button class="a'+(v==='N'?' on':'')+'" aria-label="Not done" onclick="hwSet(\''+id+'\',\''+s.id+'\',\'N\')">✗</button></div></div>'});
+if(!L.length)h+='<p class="mute">No students in this batch.</p>';
+var top=$('sheet').scrollTop;sheet('Homework check',h+'</div><button style="margin-top:10px" onclick="hwSave(\''+id+'\')">Save</button>');$('sheet').scrollTop=fresh?0:top}
+function hwSet(id,sid,v){st.hwm[sid]=v;hwMark(id)}
+async function hwSave(id){var hw=HWR.filter(function(x){return x.id===id})[0],L=ALLS.filter(function(s){return !hw.batch_id||s.batchId===hw.batch_id}),rows=[],nd=[];
+L.forEach(function(s){var v=st.hwm[s.id];if(v){rows.push({centre_id:CENTRE.id,homework_id:id,student_id:s.id,done:v==='Y'});if(v==='N')nd.push(s)}});
+if(!rows.length){toast('Mark at least one student');return}
+if(!(await w([sb.from('homework_status').upsert(rows,{onConflict:'homework_id,student_id'})])))return;
+if(!nd.length){closeSheet();toast('Homework check saved');return}
+var h='<p class="mute" style="margin-bottom:8px">Saved. You can tell the parents of children who did not do it.</p><div class="card">';
+nd.forEach(function(s){h+='<div class="row"><div><b>'+esc(s.par)+'</b><div class="mute">'+esc(s.n)+' · not done</div></div><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(s.ph,'Dear '+s.par+', '+s.n+' has not completed the homework: '+hw.text+'. Please help them complete it. — '+cname())+'" onclick="sentLink(this)">Send</a></div>'});
+sheet('Homework not done',h+'</div>')}
+function owner(){var keep=S,h;S=ALLS;try{h=ownerOld()}finally{S=keep}
+h=h.replace('<h2 style="margin-top:16px">Referral enquiries</h2>','<button class="ghost" style="margin-top:12px" onclick="announceSheet()">Send announcement</button><h2 style="margin-top:16px">Referral enquiries</h2>');
+h=h.replace('onclick="postHW()">Post homework to all</button>','onclick="postHW()">Post homework</button><button class="ghost" style="margin-bottom:8px" onclick="hwCheck()">Homework check (done / not done)</button>');
 return h.replace('<h2 style="margin-top:16px">Students</h2>',batchSection()+'<h2 style="margin-top:16px">Students</h2>')+archSection()}
 (function(){if(!window.supabase){render();return}
 sb=supabase.createClient(SB_URL,SB_KEY);DB=sb;
