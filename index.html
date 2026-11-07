@@ -3,7 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>TuitionDesk</title>
+<title>ClassOrbitX</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#F6F4EE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141829" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ClassOrbitX">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Hind:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -66,7 +75,7 @@ input:focus-visible,textarea:focus-visible{outline:3px solid var(--gold);outline
 </style>
 </head>
 <body>
-<header><h1>TuitionDesk</h1><small id="who"></small></header>
+<header><h1>ClassOrbitX</h1><small id="who"></small></header>
 <main id="main"></main>
 <nav id="nav"></nav>
 <div class="sheetbg" id="sbg"><div class="sheet" id="sheet"></div></div>
@@ -102,7 +111,7 @@ function saveCfg(){return DB.doc('cfg/main').set(CFG)}
 
 /* Empty state */
 function empty(){return '<div class="card"><h3>No students yet</h3><p class="mute" style="margin:6px 0 12px">Add your first student, or load 10 sample students to try the app.</p><button onclick="addStudent()" style="margin-bottom:8px">Add student</button><button class="ghost" onclick="seed()">Load sample students</button></div>'}
-function gate(){if(!DB)return '<div class="card"><h3>Sign in to use TuitionDesk</h3><p class="mute" style="margin-top:6px">Open this page from its Claude link while signed in. Saved data works only there.</p></div>';if(!LOADED)return '<p class="mute">Loading…</p>';return ''}
+function gate(){if(!DB)return '<div class="card"><h3>Sign in to use ClassOrbitX</h3><p class="mute" style="margin-top:6px">Open this page from its Claude link while signed in. Saved data works only there.</p></div>';if(!LOADED)return '<p class="mute">Loading…</p>';return ''}
 
 /* Fees */
 function fees(){var g=gate();if(g)return g;if(!S.length)return empty();var p=pending(),tot=p.reduce(function(a,s){return a+s.fee},0);
@@ -168,7 +177,7 @@ h+='<div class="grid"><div class="card"><div class="num">'+S.length+'</div><div 
 h+='<h2 style="margin-top:16px">Referral enquiries</h2><div class="card">';if(!ENQ.length)h+='<p class="mute">No enquiries yet.</p>';
 ENQ.forEach(function(r){h+='<div class="row"><div><b>'+esc(r.n)+'</b><div class="mute">'+esc(r.cls)+' · via '+esc(r.by)+'</div></div><div style="text-align:right"><span class="chip'+(r.st==='New'?' red':' green')+'">'+esc(r.st)+'</span><div style="margin-top:6px"><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(r.ph,'Hello! Thank you for your interest in '+cname()+'. When can we schedule a free demo class for '+r.n+'?')+'" onclick="enqDone(\''+r.id+'\')">WhatsApp</a></div></div></div>'});
 h+='</div><button class="ghost" onclick="addEnq()">Add enquiry</button><h2 style="margin-top:16px">Students and parent codes</h2><div class="card">';
-S.forEach(function(s){h+='<div class="row"><div><b>'+esc(s.n)+'</b><div class="mute">'+esc(s.par)+'</div></div><div style="text-align:right"><b class="num">'+esc(s.code)+'</b><div><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(s.ph,'Dear '+s.par+', your TuitionDesk code for '+s.n+' at '+cname()+' is '+s.code+'. Open the TuitionDesk link and enter this code to see attendance, homework and fees.')+'">Share code</a></div></div></div>'});
+S.forEach(function(s){h+='<div class="row"><div><b>'+esc(s.n)+'</b><div class="mute">'+esc(s.par)+'</div></div><div style="text-align:right"><b class="num">'+esc(s.code)+'</b><div><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(s.ph,'Dear '+s.par+', your ClassOrbitX code for '+s.n+' at '+cname()+' is '+s.code+'. Open the ClassOrbitX link and enter this code to see attendance, homework and fees.')+'">Share code</a></div></div></div>'});
 if(!S.length)h+='<p class="mute">No students yet.</p>';
 return h+'</div><button onclick="addStudent()" style="margin-bottom:8px">Add student</button><button class="ghost" style="margin-bottom:8px" onclick="postHW()">Post homework to all</button><button class="ghost" onclick="settings()">Centre name and UPI ID</button>'}
 function addStudent(){sheet('Add student','<div class="card"><label class="mute" for="f1">Student name</label><input id="f1"><label class="mute" for="f2">Parent name</label><input id="f2"><label class="mute" for="f3">Parent WhatsApp number (10 digits)</label><input id="f3" type="tel" inputmode="numeric" maxlength="10"><label class="mute" for="f4">Fee pending (₹, 0 if none)</label><input id="f4" type="number" inputmode="numeric" value="0"><label class="mute" for="f5">Fee due date</label><input id="f5" type="date"></div><button onclick="doAdd()">Save student</button>')}
@@ -249,7 +258,7 @@ h+='<div class="grid"><div class="card"><div class="num">'+S.length+'</div><div 
 h+='<h2 style="margin-top:16px">Referral enquiries</h2><div class="card">';if(!ENQ.length)h+='<p class="mute">No enquiries yet.</p>';
 ENQ.forEach(function(r){h+='<div class="row"><div><b>'+esc(r.n)+'</b><div class="mute">'+esc(r.cls)+' · via '+esc(r.by)+'</div></div><div style="text-align:right"><span class="chip'+(r.st==='New'?' red':' green')+'">'+esc(r.st)+'</span><div style="margin-top:6px"><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(r.ph,'Hello! Thank you for your interest in '+cname()+'. When can we schedule a free demo class for '+r.n+'?')+'" onclick="enqDone(\''+r.id+'\')">WhatsApp</a></div></div></div>'});
 h+='</div><button class="ghost" onclick="addEnq()">Add enquiry</button><h2 style="margin-top:16px">Students</h2><div class="card">';
-S.forEach(function(s){h+='<div class="row"><div><b>'+esc(s.n)+'</b> '+(s.fee>0?'<span class="chip red">Due</span>':'<span class="chip green">Clear</span>')+'<div class="mute">'+esc(s.par)+' · '+bName(s.batchId)+' · '+inr(s.monthly)+'/month · '+(s.nextDue?'next due '+dfmt(s.nextDue):'set due date')+'</div></div><span><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(s.ph,'Dear '+s.par+', you can see '+s.n+'’s attendance, homework and fees on TuitionDesk: '+url+' . Choose Parent and log in with this mobile number.')+'">Invite</a> <button class="small ghost" onclick="editFee(\''+s.id+'\')">Edit</button></span></div>'});
+S.forEach(function(s){h+='<div class="row"><div><b>'+esc(s.n)+'</b> '+(s.fee>0?'<span class="chip red">Due</span>':'<span class="chip green">Clear</span>')+'<div class="mute">'+esc(s.par)+' · '+bName(s.batchId)+' · '+inr(s.monthly)+'/month · '+(s.nextDue?'next due '+dfmt(s.nextDue):'set due date')+'</div></div><span><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(s.ph,'Dear '+s.par+', you can see '+s.n+'’s attendance, homework and fees on ClassOrbitX: '+url+' . Choose Parent and log in with this mobile number.')+'">Invite</a> <button class="small ghost" onclick="editFee(\''+s.id+'\')">Edit</button></span></div>'});
 if(!S.length)h+='<p class="mute">No students yet.</p>';
 return h+'</div><button onclick="addStudent()" style="margin-bottom:8px">Add student</button><button class="ghost" style="margin-bottom:8px" onclick="postHW()">Post homework to all</button><button class="ghost" style="margin-bottom:8px" onclick="settings()">Centre name and UPI ID</button>'+demoBtn()}
 
@@ -262,7 +271,7 @@ st.pv=Object.assign({},k,{upi:CFG.upi,centre:CFG.name,batchName:k.batchId?bName(
 
 var TABS=[['fees','Fees',fees],['att','Attendance',attendance],['tests','Tests',tests],['parent','Parent',parentTab],['owner','Owner',owner]];
 function render(){var y=window.scrollY;if(st.recovery&&USER){$('nav').style.display='none';$('who').innerHTML='';$('main').innerHTML=recoveryUI();return}
-if(!USER){$('nav').style.display='none';$('who').innerHTML='';$('main').innerHTML=sb?loginUI():gate();return}
+if(!USER){$('nav').style.display='none';$('who').innerHTML='';$('main').innerHTML=sb?loginUI()+installCard():gate();return}
 $('who').innerHTML=(OWNER?'Owner':'Parent')+' · <a href="#" onclick="signOut();return false" style="color:inherit">Sign out</a>';
 if(!OWNER)st.tab='parent';$('nav').style.display=OWNER&&CENTRE?'flex':'none';
 if(OWNER&&LOADED&&!CENTRE){$('main').innerHTML=setupUI();return}
@@ -545,7 +554,20 @@ sheet('Homework not done',h+'</div>')}
 function owner(){var keep=S,h;S=ALLS;try{h=ownerOld()}finally{S=keep}
 h=h.replace('<h2 style="margin-top:16px">Referral enquiries</h2>','<button class="ghost" style="margin-top:12px" onclick="announceSheet()">Send announcement</button><h2 style="margin-top:16px">Referral enquiries</h2>');
 h=h.replace('onclick="postHW()">Post homework to all</button>','onclick="postHW()">Post homework</button><button class="ghost" style="margin-bottom:8px" onclick="hwCheck()">Homework check (done / not done)</button>');
-return h.replace('<h2 style="margin-top:16px">Students</h2>',batchSection()+'<h2 style="margin-top:16px">Students</h2>')+archSection()}
+return h.replace('<h2 style="margin-top:16px">Students</h2>',batchSection()+'<h2 style="margin-top:16px">Students</h2>')+archSection()+installCard()}
+
+/* ===== PWA: install prompt, offline notice, service worker ===== */
+var DEFERRED=null;
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();DEFERRED=e;render()});
+window.addEventListener('appinstalled',function(){DEFERRED=null;toast('App installed');render()});
+function isStandalone(){return (window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true}
+function installCard(){if(isStandalone())return '';
+if(DEFERRED)return '<div class="card"><h3>Install ClassOrbitX</h3><p class="mute" style="margin:4px 0 10px">Add it to your home screen to open it like an app.</p><button onclick="doInstall()">Install app</button></div>';
+if(/iphone|ipad|ipod/i.test(navigator.userAgent))return '<div class="card"><h3>Install on iPhone</h3><p class="mute" style="margin-top:4px">In Safari tap Share, then Add to Home Screen.</p></div>';return ''}
+function doInstall(){if(!DEFERRED)return;DEFERRED.prompt();DEFERRED.userChoice.then(function(){DEFERRED=null;render()})}
+window.addEventListener('offline',function(){toast('You are offline. Changes cannot be saved.')});
+window.addEventListener('online',function(){toast('Back online');if(USER)loadAll()});
+if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})});
 (function(){if(!window.supabase){render();return}
 sb=supabase.createClient(SB_URL,SB_KEY);DB=sb;
 sb.auth.onAuthStateChange(function(ev,ses){if(ev==='PASSWORD_RECOVERY')st.recovery=1;USER=ses?ses.user:null;OWNER=!!(USER&&USER.email);LOADED=false;S=[];KIDS=[];st.tab=OWNER?'fees':'parent';render();if(USER)setTimeout(loadAll,0)});
