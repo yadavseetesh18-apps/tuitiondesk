@@ -81,6 +81,7 @@ input:focus-visible,textarea:focus-visible{outline:3px solid var(--gold);outline
 <div class="sheetbg" id="sbg"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 var NOW=new Date();NOW.setHours(0,0,0,0);
 var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],MAX=50,BATCH='Today’s batch';
@@ -223,7 +224,7 @@ var o=await Promise.all([sb.from('students').select('*').order('name'),allRows('
 for(var i=0;i<o.length;i++)if(o[i].error&&i!==6)throw o[i].error;
 ATTR=o[1].data;SCR=o[2].data;HWS=(o[6]&&!o[6].error)?(o[6].data||[]):[];HWR=o[3].data;HW=HWR.map(function(r){return r.text});BATCHES=o[5].data||[];CENTRE=o[4].data[0]||null;CFG={name:CENTRE?CENTRE.name:'',upi:CENTRE&&CENTRE.upi||'',collected:0};
 var built=o[0].data.map(function(x){return build(x,o[1].data,o[2].data,HWR.filter(function(r){return !r.batch_id||r.batch_id===x.batch_id}).map(function(r){return r.text}).slice(0,3))});
-if(st.bf!=='all'&&st.bf!=='none'&&!BATCHES.some(function(b){return b.id===st.bf}))st.bf='all';if(OWNER){ARCH=built.filter(function(x){return x.active===false});ALLS=built.filter(function(x){return x.active!==false});S=ALLS.filter(inB);if(CENTRE){var e=await Promise.all([sb.from('enquiries').select('*'),sb.from('payments').select('student_id,amount')]);
+if(st.bf!=='all'&&st.bf!=='none'&&!BATCHES.some(function(b){return b.id===st.bf}))st.bf='all';if(OWNER){ARCH=built.filter(function(x){return x.active===false});ALLS=built.filter(function(x){return x.active!==false});S=ALLS.filter(inB);if(CENTRE){var e=await Promise.all([sb.from('enquiries').select('*'),allRows('payments','*','paid_on')]);
 ENQ=(e[0].data||[]).map(function(r){return {id:r.id,n:r.child_name,cls:r.class||'—',by:r.referred_by||'—',ph:r.phone,st:r.status}});PAY=e[1].data||[];CFG.collected=(e[1].data||[]).reduce(function(a,r){return a+r.amount},0)}}else KIDS=built;
 }catch(e){toast('Could not load data. '+(e.message||''))}
 LOADED=true;render()}
@@ -290,7 +291,7 @@ try{var br=await sb.from('batches').insert([{centre_id:cid,name:'Demo · Class 9
 if(r.error)throw r.error;
 var att=[],sc=[],pay=[];
 r.data.forEach(function(s,i){var x=D[i];for(var k=1;k<=24;k++)att.push({centre_id:cid,student_id:s.id,day:iso(k),present:k>24-x[4]});
-x[5].forEach(function(v,j){sc.push({centre_id:cid,student_id:s.id,test_date:iso((5-j)*7),score:v,max_score:MAX})});if(!x[2])pay.push({centre_id:cid,student_id:s.id,amount:2500})});
+x[5].forEach(function(v,j){sc.push({centre_id:cid,student_id:s.id,test_date:iso((5-j)*7),score:v,max_score:MAX})});if(!x[2])for(var q=0;q<5;q++)pay.push({centre_id:cid,student_id:s.id,amount:2500,paid_on:iso(q*30+i)})});
 if(await w([sb.from('attendance').insert(att),sb.from('test_scores').insert(sc),sb.from('payments').insert(pay),
 sb.from('homework').insert([{centre_id:cid,text:'Algebra ex. 4.2, Q1–10 (due tomorrow)'},{centre_id:cid,text:'Science chapter 6 notes (Fri)'}]),
 sb.from('enquiries').insert([{centre_id:cid,child_name:'Tanvi Rao',class:'Class 9',referred_by:'Ananya Iyer’s mother',phone:'9198111000'+1},{centre_id:cid,child_name:'Yash Kulkarni',class:'Class 10',referred_by:'Meera Joshi’s father',phone:'9198111000'+2,status:'Contacted'},{centre_id:cid,child_name:'Pooja Bansal',class:'Class 9',referred_by:'Aarav Mehta’s mother',phone:'9198111000'+3}])]))toast('Demo students loaded')}
@@ -568,6 +569,60 @@ function doInstall(){if(!DEFERRED)return;DEFERRED.prompt();DEFERRED.userChoice.t
 window.addEventListener('offline',function(){toast('You are offline. Changes cannot be saved.')});
 window.addEventListener('online',function(){toast('Back online');if(USER)loadAll()});
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})});
+
+/* ===== Monthly report (Excel / PDF) and data export ===== */
+function allStud(){return ALLS.concat(ARCH)}
+function bnOf(id){var s=allStud().filter(function(x){return x.id===id})[0];return s?bName(s.batchId):''}
+function monthPay(m){return PAY.filter(function(p){return String(p.paid_on).slice(0,7)===m})}
+function monthLabel(m){return new Date(m+'-01').toLocaleDateString('en-IN',{month:'long',year:'numeric'})}
+function reportData(m){var P=monthPay(m),byS={},byB={},tot=0;
+P.forEach(function(p){tot+=p.amount;byS[p.student_id]=(byS[p.student_id]||0)+p.amount;var s=allStud().filter(function(x){return x.id===p.student_id})[0],b=s?(s.batchId||''):'';byB[b]=(byB[b]||0)+p.amount});
+var due=ALLS.filter(function(s){return s.fee>0}).sort(function(a,b){return late(b)-late(a)});
+return {m:m,P:P,byS:byS,byB:byB,tot:tot,due:due,pend:due.reduce(function(a,s){return a+s.fee},0)}}
+function reportTables(D){var keys=BATCHES.map(function(b){return b.id}).concat(['']);
+var summary=[['Centre',cname()],['Month',monthLabel(D.m)],['Collected in this month',D.tot],['Payments received',D.P.length],['Pending right now',D.pend],['Students with fees due',D.due.length]];
+var batch=[['Batch','Students','Collected in month','Pending now']];
+keys.forEach(function(k){var L=ALLS.filter(function(s){return (s.batchId||'')===k}),col=D.byB[k]||0,pend=L.reduce(function(a,s){return a+s.fee},0);if(!k&&!col&&!pend&&!L.length)return;batch.push([k?bName(k):'No batch',L.length,col,pend])});
+var paid=[['Student','Batch','Amount paid']];Object.keys(D.byS).sort(function(a,b){return D.byS[b]-D.byS[a]}).forEach(function(id){paid.push([sName(id),bnOf(id),D.byS[id]])});
+var due=[['Student','Batch','Amount due','Days late']];D.due.forEach(function(s){due.push([s.n,bName(s.batchId),s.fee,late(s)])});
+return {summary:summary,batch:batch,paid:paid,due:due}}
+function reportSheet(m){m=m||today().slice(0,7);var D=reportData(m),r=function(l,v){return '<div class="row"><span class="mute">'+l+'</span><b>'+v+'</b></div>'};
+var h='<div class="card"><label class="mute" for="rm">Month</label><input id="rm" type="month" value="'+m+'" max="'+today().slice(0,7)+'" onchange="reportSheet(this.value)"></div><div class="card">'+r('Collected in this month',inr(D.tot))+r('Payments received',D.P.length)+r('Pending right now',inr(D.pend))+r('Students with fees due',D.due.length)+'</div>';
+var T=reportTables(D);h+='<div class="card"><h3>By batch</h3>';
+T.batch.slice(1).forEach(function(x){h+='<div class="row"><span>'+esc(x[0])+' <span class="mute">('+x[1]+')</span></span><span class="mute">'+inr(x[2])+' in · '+inr(x[3])+' due</span></div>'});
+if(T.batch.length<2)h+='<p class="mute">No data yet.</p>';h+='</div><div class="card"><h3>Paid this month</h3>';
+if(T.paid.length<2)h+='<p class="mute">No payments in this month.</p>';T.paid.slice(1).forEach(function(x){h+='<div class="row"><span>'+esc(x[0])+'</span><b>'+inr(x[2])+'</b></div>'});
+h+='</div><div class="card"><h3>Fees due now</h3>';if(T.due.length<2)h+='<p class="mute">Nobody has fees due.</p>';
+T.due.slice(1).forEach(function(x){h+='<div class="row"><span>'+esc(x[0])+' <span class="chip red">'+x[3]+' days late</span></span><b>'+inr(x[2])+'</b></div>'});h+='</div>';
+var msg='Fee report · '+monthLabel(m)+' · '+cname()+'\nCollected: '+inr(D.tot)+'\nPending now: '+inr(D.pend)+' ('+D.due.length+' students)';
+sheet('Monthly report',h+'<button style="margin-bottom:8px" onclick="repXlsx(\''+m+'\')">Download Excel</button><button class="ghost" style="margin-bottom:8px" onclick="repPdf(\''+m+'\')">Save as PDF</button><a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent(msg)+'">Share summary on WhatsApp</a>')}
+function csvDownload(name,rows){var s='\ufeff'+rows.map(function(r){return r.map(function(c){return '"'+String(c==null?'':c).replace(/"/g,'""')+'"'}).join(',')}).join('\r\n');
+var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([s],{type:'text/csv;charset=utf-8'}));a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},800);toast('Downloaded '+name)}
+function xlsxDownload(name,sheets){if(!window.XLSX){csvDownload(name.replace(/\.xlsx$/,'.csv'),sheets[0].rows);toast('Excel tool could not load, so a CSV file was downloaded');return}
+var wb=XLSX.utils.book_new();sheets.forEach(function(sh){var ws=XLSX.utils.aoa_to_sheet(sh.rows);ws['!cols']=(sh.rows[0]||[]).map(function(){return {wch:20}});XLSX.utils.book_append_sheet(wb,ws,sh.name.replace(/[\[\]:*?\/\\]/g,' ').slice(0,31))});
+XLSX.writeFile(wb,name);toast('Downloaded '+name)}
+function repXlsx(m){var D=reportData(m),T=reportTables(D);xlsxDownload('report-'+m+'.xlsx',[{name:'Summary',rows:T.summary},{name:'By batch',rows:T.batch},{name:'Paid',rows:T.paid},{name:'Due now',rows:T.due}])}
+function printHtml(title,body){var css='body{font:14px Arial,Helvetica,sans-serif;color:#111;margin:18px}h1{font-size:20px;margin:0 0 2px}h2{font-size:15px;margin:18px 0 6px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #bbb;padding:5px 8px;text-align:left;font-size:13px}th{background:#eee}.m{color:#555;font-size:12px}',
+doc='<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+'</title><style>'+css+'</style></head><body>'+body+'</body></html>',w2=window.open('','_blank');
+if(w2){w2.document.open();w2.document.write(doc);w2.document.close();w2.focus();setTimeout(function(){w2.print()},600);toast('Choose Save as PDF in the print screen');return}
+var f=document.createElement('iframe');f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';document.body.appendChild(f);f.contentDocument.open();f.contentDocument.write(doc);f.contentDocument.close();setTimeout(function(){f.contentWindow.print();setTimeout(function(){f.remove()},3000)},600)}
+function repPdf(m){var D=reportData(m),T=reportTables(D),tbl=function(rows,money){return '<table><tr>'+rows[0].map(function(c){return '<th>'+esc(c)+'</th>'}).join('')+'</tr>'+rows.slice(1).map(function(r){return '<tr>'+r.map(function(c,i){return '<td>'+esc(money&&money.indexOf(i)>=0?inr(c):c)+'</td>'}).join('')+'</tr>'}).join('')+'</table>'};
+var body='<h1>'+esc(cname())+'</h1><div class="m">Fee report · '+esc(monthLabel(m))+'</div><h2>Summary</h2><table>'+T.summary.slice(2).map(function(r,i){return '<tr><td>'+esc(r[0])+'</td><td>'+esc(i<1||i===2?inr(r[1]):r[1])+'</td></tr>'}).join('')+'</table><h2>By batch</h2>'+tbl(T.batch,[2,3])+'<h2>Paid this month</h2>'+(T.paid.length>1?tbl(T.paid,[2]):'<p class="m">No payments.</p>')+'<h2>Fees due now</h2>'+(T.due.length>1?tbl(T.due,[2]):'<p class="m">Nobody has fees due.</p>')+'<p class="m" style="margin-top:18px">Generated on '+esc(dfmt(NOW))+' by ClassOrbitX</p>';
+printHtml('Fee report '+m,body)}
+function dataTables(){var nm={};allStud().forEach(function(s){nm[s.id]=s});var T={};
+T.students=[['Name','Parent','Parent phone','Batch','Status','Monthly fee','Joining date','Next due','Pending amount','Attendance %']];allStud().forEach(function(s){T.students.push([s.n,s.par,s.ph,bName(s.batchId),s.active===false?'Archived':'Active',s.monthly,s.join,s.nextDue,s.fee,s.att[1]?Math.round(s.att[0]/s.att[1]*100):''])});
+T.payments=[['Date','Student','Batch','Amount']];PAY.forEach(function(p){T.payments.push([p.paid_on,sName(p.student_id),bnOf(p.student_id),p.amount])});
+T.attendance=[['Date','Student','Batch','Status']];ATTR.forEach(function(r){T.attendance.push([r.day,sName(r.student_id),bnOf(r.student_id),r.present?'Present':'Absent'])});
+T.scores=[['Date','Student','Batch','Subject','Score','Total marks']];SCR.forEach(function(r){T.scores.push([r.test_date,sName(r.student_id),bnOf(r.student_id),r.subject||'',r.score,r.max_score||50])});
+T.enquiries=[['Child','Class','Referred by','Phone','Status']];ENQ.forEach(function(e){T.enquiries.push([e.n,e.cls,e.by,e.ph,e.st])});
+T.batches=[['Batch','Timing','Default monthly fee']];BATCHES.forEach(function(b){T.batches.push([b.name,b.timing||'',b.monthly_fee])});return T}
+function exportSheet(){sheet('Export data','<p class="mute" style="margin-bottom:8px">Download a copy of your data. Keep it in Drive or on your computer as a backup.</p><button style="margin-bottom:8px" onclick="exportXlsx()">All data (Excel)</button><button class="ghost" style="margin-bottom:8px" onclick="exportCsv(\'students\')">Students (CSV)</button><button class="ghost" style="margin-bottom:8px" onclick="exportCsv(\'payments\')">Payments (CSV)</button><button class="ghost" style="margin-bottom:8px" onclick="exportCsv(\'attendance\')">Attendance (CSV)</button><button class="ghost" style="margin-bottom:8px" onclick="exportCsv(\'scores\')">Test scores (CSV)</button><button class="ghost" onclick="exportCsv(\'enquiries\')">Enquiries (CSV)</button>')}
+function exportXlsx(){var T=dataTables();xlsxDownload('classorbitx-backup-'+today()+'.xlsx',[{name:'Students',rows:T.students},{name:'Payments',rows:T.payments},{name:'Attendance',rows:T.attendance},{name:'Test scores',rows:T.scores},{name:'Enquiries',rows:T.enquiries},{name:'Batches',rows:T.batches}])}
+function exportCsv(kind){var T=dataTables();csvDownload('classorbitx-'+kind+'-'+today()+'.csv',T[kind])}
+function owner(){var keep=S,h;S=ALLS;try{h=ownerOld()}finally{S=keep}
+h=h.replace('<h2 style="margin-top:16px">Referral enquiries</h2>','<div class="grid" style="margin-top:12px"><button onclick="reportSheet()">Monthly report</button><button class="ghost" onclick="exportSheet()">Export data</button></div><button class="ghost" style="margin-top:10px" onclick="announceSheet()">Send announcement</button><h2 style="margin-top:16px">Referral enquiries</h2>');
+h=h.replace('onclick="postHW()">Post homework to all</button>','onclick="postHW()">Post homework</button><button class="ghost" style="margin-bottom:8px" onclick="hwCheck()">Homework check (done / not done)</button>');
+return h.replace('<h2 style="margin-top:16px">Students</h2>',batchSection()+'<h2 style="margin-top:16px">Students</h2>')+archSection()+installCard()}
 (function(){if(!window.supabase){render();return}
 sb=supabase.createClient(SB_URL,SB_KEY);DB=sb;
 sb.auth.onAuthStateChange(function(ev,ses){if(ev==='PASSWORD_RECOVERY')st.recovery=1;USER=ses?ses.user:null;OWNER=!!(USER&&USER.email);LOADED=false;S=[];KIDS=[];st.tab=OWNER?'fees':'parent';render();if(USER)setTimeout(loadAll,0)});
