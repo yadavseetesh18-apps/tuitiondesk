@@ -273,12 +273,12 @@ st.pv=Object.assign({},k,{upi:CFG.upi,centre:CFG.name,batchName:k.batchId?bName(
 var TABS=[['fees','Fees',fees],['att','Attendance',attendance],['tests','Tests',tests],['parent','Parent',parentTab],['owner','Owner',owner]];
 function render(){var y=window.scrollY;if(st.recovery&&USER){$('nav').style.display='none';$('who').innerHTML='';$('main').innerHTML=recoveryUI();return}
 if(!USER){$('nav').style.display='none';$('who').innerHTML='';$('main').innerHTML=sb?loginUI()+installCard():gate();return}
-$('who').innerHTML=(OWNER?'Owner':'Parent')+' · <a href="#" onclick="signOut();return false" style="color:inherit">Sign out</a>';
+$('who').innerHTML=(OWNER&&CENTRE?'<a href="#" onclick="openPage(\'students\');return false" style="color:inherit">Students</a> · ':'')+(OWNER?'Owner':'Parent')+' · <a href="#" onclick="signOut();return false" style="color:inherit">Sign out</a>';
 if(!OWNER)st.tab='parent';$('nav').style.display=OWNER&&CENTRE?'flex':'none';
 if(OWNER&&LOADED&&!CENTRE){$('main').innerHTML=setupUI();return}
 var vis=OWNER?TABS:[TABS[3]];
 $('nav').innerHTML=vis.map(function(t){return '<button class="'+(st.tab===t[0]?'on':'')+'" onclick="go(\''+t[0]+'\')">'+t[1]+'</button>'}).join('');
-BATCH=(st.bf==='all'||!BATCHES.length)?'Today’s attendance':bName(st.bf)+' · today';var pre=(OWNER&&CENTRE&&['fees','att','tests'].indexOf(st.tab)>=0)?filterBar():'';$('main').innerHTML=pre+TABS.filter(function(t){return t[0]===st.tab})[0][2]();window.scrollTo(0,y)}
+if(st.page&&OWNER&&CENTRE&&LOADED){$('nav').style.display='none';$('main').innerHTML=pageHtml();window.scrollTo(0,st.page==='students'?(st.sy||0):0);return}BATCH=(st.bf==='all'||!BATCHES.length)?'Today’s attendance':bName(st.bf)+' · today';var pre=(OWNER&&CENTRE&&['fees','att','tests'].indexOf(st.tab)>=0)?filterBar():'';$('main').innerHTML=pre+TABS.filter(function(t){return t[0]===st.tab})[0][2]();window.scrollTo(0,y)}
 
 /* Demo data tools */
 function iso(n){var d=new Date(NOW-n*864e5);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
@@ -619,7 +619,7 @@ T.batches=[['Batch','Timing','Default monthly fee']];BATCHES.forEach(function(b)
 function exportSheet(){sheet('Export data','<p class="mute" style="margin-bottom:8px">Download a copy of your data. Keep it in Drive or on your computer as a backup.</p><button style="margin-bottom:8px" onclick="exportXlsx()">All data (Excel)</button><button class="ghost" style="margin-bottom:8px" onclick="exportCsv(\'students\')">Students (CSV)</button><button class="ghost" style="margin-bottom:8px" onclick="exportCsv(\'payments\')">Payments (CSV)</button><button class="ghost" style="margin-bottom:8px" onclick="exportCsv(\'attendance\')">Attendance (CSV)</button><button class="ghost" style="margin-bottom:8px" onclick="exportCsv(\'scores\')">Test scores (CSV)</button><button class="ghost" onclick="exportCsv(\'enquiries\')">Enquiries (CSV)</button>')}
 function exportXlsx(){var T=dataTables();xlsxDownload('classorbitx-backup-'+today()+'.xlsx',[{name:'Students',rows:T.students},{name:'Payments',rows:T.payments},{name:'Attendance',rows:T.attendance},{name:'Test scores',rows:T.scores},{name:'Enquiries',rows:T.enquiries},{name:'Batches',rows:T.batches}])}
 function exportCsv(kind){var T=dataTables();csvDownload('classorbitx-'+kind+'-'+today()+'.csv',T[kind])}
-function owner(){var keep=S,h;S=ALLS;try{h=ownerOld()}finally{S=keep}
+function ownerPrev3(){var keep=S,h;S=ALLS;try{h=ownerOld()}finally{S=keep}
 h=h.replace('<h2 style="margin-top:16px">Referral enquiries</h2>','<div class="grid" style="margin-top:12px"><button onclick="reportSheet()">Monthly report</button><button class="ghost" onclick="exportSheet()">Export data</button></div><button class="ghost" style="margin-top:10px" onclick="announceSheet()">Send announcement</button><h2 style="margin-top:16px">Referral enquiries</h2>');
 h=h.replace('onclick="postHW()">Post homework to all</button>','onclick="postHW()">Post homework</button><button class="ghost" style="margin-bottom:8px" onclick="hwCheck()">Homework check (done / not done)</button>');
 return h.replace('<h2 style="margin-top:16px">Students</h2>',batchSection()+'<h2 style="margin-top:16px">Students</h2>')+archSection()+installCard()}
@@ -662,6 +662,56 @@ async function promoteUndo(){var u=st.undo;if(!u||!u.length){toast('Nothing to u
 var g={},q=[];u.forEach(function(x){var k=(x.batch_id||'')+'|'+x.monthly_fee;(g[k]=g[k]||{row:{batch_id:x.batch_id,monthly_fee:x.monthly_fee,active:true},ids:[]}).ids.push(x.id)});
 Object.keys(g).forEach(function(k){chunk(g[k].ids,50).forEach(function(c){q.push(sb.from('students').update(g[k].row).in('id',c))})});
 if(await w(q)){st.undo=null;closeSheet();toast('Change undone')}}
+
+/* ===== All students page and student profile page ===== */
+st.page=null;st.pd=null;st.q='';st.sb='all';st.ss='all';st.so='name';st.sy=0;
+function signOut(){st.page=null;st.pd=null;sb.auth.signOut()}
+function openPage(p){st.page=p;st.pd=null;st.sy=0;history.pushState({page:p},'');render();window.scrollTo(0,0)}
+function openStudent(id){st.sy=window.scrollY;st.page='student';st.pd=id;history.pushState({page:'student',id:id},'');render();window.scrollTo(0,0)}
+function closePage(){if(history.state&&history.state.page)history.back();else{st.page=null;st.pd=null;render()}}
+window.addEventListener('popstate',function(e){var s=e.state;st.page=s&&s.page?s.page:null;st.pd=s&&s.id?s.id:null;render()});
+function pageHtml(){return st.page==='student'?studentPage(st.pd):studentsPage()}
+function pageBar(title){return '<div style="display:flex;align-items:center;gap:10px;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding:8px 0;margin-bottom:6px;z-index:5"><button class="small ghost" onclick="closePage()">← Back</button><h2 style="margin:0;flex:1;font-size:19px">'+title+'</h2></div>'}
+function attPct(s){return s.att&&s.att[1]?Math.round(s.att[0]/s.att[1]*100):null}
+function stuFiltered(){var q=(st.q||'').trim().toLowerCase(),L=(st.ss==='archived'?ARCH:ALLS).filter(function(s){
+if(st.sb==='none'){if(s.batchId)return false}else if(st.sb!=='all'&&s.batchId!==st.sb)return false;
+if(st.ss==='due'&&!(s.fee>0))return false;if(st.ss==='clear'&&s.fee>0)return false;
+if(q&&(s.n+' '+s.par+' '+s.ph).toLowerCase().indexOf(q)<0)return false;return true});
+var by={name:function(a,b){return a.n.toLowerCase()<b.n.toLowerCase()?-1:1},due:function(a,b){return (b.fee>0)-(a.fee>0)||late(b)-late(a)||(a.n<b.n?-1:1)},att:function(a,b){var x=attPct(a),y=attPct(b);return (x===null?101:x)-(y===null?101:y)},join:function(a,b){return (a.join<b.join)-(a.join>b.join)}};
+return L.sort(by[st.so]||by.name)}
+function stuSummary(L){var d=L.filter(function(s){return s.fee>0});return L.length+' students · '+d.length+' fee due · '+inr(d.reduce(function(a,s){return a+s.fee},0))+' pending'}
+function stuRow(s){var p=attPct(s),t=s.sp&&s.sp.length?lastSc(s)+'%':'—';
+return '<div class="card" role="button" tabindex="0" style="cursor:pointer;margin-bottom:8px" onclick="openStudent(\''+s.id+'\')"><div class="row" style="border:0;margin:0;padding:0"><div><b>'+esc(s.n)+'</b> '+(s.active===false?'<span class="chip">Archived</span>':(s.fee>0?'<span class="chip red">Due</span>':'<span class="chip green">Clear</span>'))+'<div class="mute">'+esc(bName(s.batchId))+' · '+esc(s.par)+'</div></div><div style="text-align:right">'+(s.fee>0?'<b class="num">'+inr(s.fee)+'</b><div class="mute">'+late(s)+' days late</div>':'<div class="mute">Next due '+(s.nextDue?dfmt(s.nextDue):'—')+'</div>')+'</div></div><div class="mute" style="margin-top:6px">Attendance '+(p===null?'—':p+'%')+' · Last test '+t+'</div></div>'}
+function stuListHtml(){var L=stuFiltered();return L.length?L.map(stuRow).join(''):'<p class="mute">No students match.</p>'}
+function stuSearch(v){st.q=v;$('stulist').innerHTML=stuListHtml();$('stusum').textContent=stuSummary(stuFiltered())}
+function setStu(k,v){st[k]=v;render()}
+function studentsPage(){var h=pageBar('All students'),L=stuFiltered();
+h+='<input id="sq" type="search" placeholder="Search name, parent or phone" value="'+esc(st.q||'')+'" oninput="stuSearch(this.value)" style="margin-bottom:8px">';
+h+='<div class="chips">'+[['all','All'],['due','Fee due'],['clear','Clear'],['archived','Archived']].map(function(x){return '<button class="'+(st.ss===x[0]?'on':'')+'" onclick="setStu(\'ss\',\''+x[0]+'\')">'+x[1]+(x[0]==='archived'&&ARCH.length?' ('+ARCH.length+')':'')+'</button>'}).join('')+'</div>';
+if(BATCHES.length){h+='<div class="chips"><button class="'+(st.sb==='all'?'on':'')+'" onclick="setStu(\'sb\',\'all\')">All batches</button>'+BATCHES.map(function(b){return '<button class="'+(st.sb===b.id?'on':'')+'" onclick="setStu(\'sb\',\''+b.id+'\')">'+esc(b.name)+'</button>'}).join('')+'<button class="'+(st.sb==='none'?'on':'')+'" onclick="setStu(\'sb\',\'none\')">No batch</button></div>'}
+h+='<select aria-label="Sort" onchange="setStu(\'so\',this.value)">'+[['name','Sort: Name'],['due','Sort: Fee due first'],['att','Sort: Lowest attendance'],['join','Sort: Newest joined']].map(function(x){return '<option value="'+x[0]+'"'+(st.so===x[0]?' selected':'')+'>'+x[1]+'</option>'}).join('')+'</select>';
+return h+'<p class="mute" id="stusum" style="margin-bottom:8px">'+stuSummary(L)+'</p><div id="stulist">'+stuListHtml()+'</div>'}
+function studentPage(id){var s=sById(id);if(!s)return pageBar('Student')+'<p class="mute">This student was not found. They may have been deleted.</p>';
+var p=attPct(s),h=pageBar(esc(s.n)),r=function(l,v){return '<div class="row"><span class="mute">'+l+'</span><b>'+v+'</b></div>'};
+h+='<div style="margin-bottom:10px"><span class="chip">'+esc(bName(s.batchId))+'</span> '+(s.active===false?'<span class="chip">Archived</span>':(s.fee>0?'<span class="chip red">Fee due</span>':'<span class="chip green">Fees clear</span>'))+'</div>';
+h+='<div class="card"><h3>Parent</h3>'+r('Name',esc(s.par))+r('Phone','+'+esc(s.ph))+'<div style="display:flex;gap:8px;margin-top:10px"><a class="btn small" style="flex:1" href="tel:+'+esc(s.ph)+'">Call</a><a class="btn wa small" style="flex:1" target="_blank" rel="noopener" href="'+wa(s.ph,'Hello '+s.par+',')+'">WhatsApp</a></div></div>';
+var pays=PAY.filter(function(x){return x.student_id===id}).sort(function(a,b){return String(a.paid_on)<String(b.paid_on)?1:-1}).slice(0,8);
+h+='<div class="card"><h3>Fees</h3>'+r('Monthly fee',inr(s.monthly))+r('Joined',s.join?dfmt(s.join):'—')+r('Next due',s.nextDue?dfmt(s.nextDue):'—')+r('Pending',s.fee>0?inr(s.fee)+' · '+late(s)+' days late':'₹0')+(s.paidPart>0?r('Paid toward this month',inr(s.paidPart)):'');
+if(s.active!==false&&s.fee>0)h+='<div style="display:flex;gap:8px;margin-top:10px"><button class="small" style="flex:1" onclick="markPaid(\''+id+'\')">Paid</button><button class="small ghost" style="flex:1" onclick="partPay(\''+id+'\')">Part</button><a class="btn wa small" style="flex:1" target="_blank" rel="noopener" href="'+wa(s.ph,remindMsg(s))+'">Remind</a></div>';
+h+='<h3 style="margin-top:14px">Payments</h3>';if(!pays.length)h+='<p class="mute">No payments recorded yet.</p>';pays.forEach(function(x){h+=r(dfmt(x.paid_on),inr(x.amount))});h+='</div>';
+var ar=ATTR.filter(function(x){return x.student_id===id}).sort(function(a,b){return a.day<b.day?1:-1}).slice(0,10);
+h+='<div class="card"><h3>Attendance</h3>'+r('Overall',p===null?'—':p+'% ('+s.att[0]+' of '+s.att[1]+' days)');if(ar.length){h+='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">';ar.forEach(function(x){h+='<span class="chip'+(x.present?' green':' red')+'">'+dfmt(x.day)+' '+(x.present?'P':'A')+'</span>'});h+='</div>'}h+='</div>';
+var rows=s.srows||[],sp=s.sp||[];h+='<div class="card"><h3>Tests</h3>';
+if(!sp.length)h+='<p class="mute">No tests yet.</p>';else{h+='<div class="bars">';sp.slice(-6).forEach(function(v,i,a){var t=rows[rows.length-a.length+i];h+='<div class="c'+(i===a.length-1?' last':'')+'"><b>'+v+'</b><i style="height:'+Math.max(2,v)+'%"></i>'+esc(t&&t.subject?t.subject.slice(0,4):'T'+(rows.length-a.length+i+1))+'</div>'});h+='</div>';
+rows.slice(-4).reverse().forEach(function(t){h+=r(esc(t.subject||'Test')+' <span class="mute">'+dfmt(t.test_date)+'</span>',t.score+'/'+(t.max_score||50))})}h+='</div>';
+var hw=HWR.filter(function(x){return x.id&&(!x.batch_id||x.batch_id===s.batchId)}).slice(0,5);h+='<div class="card"><h3>Homework</h3>';
+if(!hw.length)h+='<p class="mute">No homework posted yet.</p>';hw.forEach(function(x){var st2=HWS.filter(function(y){return y.homework_id===x.id&&y.student_id===id})[0];h+='<div class="row"><span>'+esc(x.text.length>50?x.text.slice(0,50)+'…':x.text)+'</span>'+(st2?'<span class="chip'+(st2.done?' green':' red')+'">'+(st2.done?'✓ Done':'✗ Not done')+'</span>':'<span class="mute">—</span>')+'</div>'});h+='</div>';
+return h+'<button style="margin-bottom:8px" onclick="editFee(\''+id+'\')">Edit student</button>'+(s.active===false?'<button class="ghost" onclick="restoreSheet(\''+id+'\')">Restore student</button>':'<button class="ghost" onclick="archiveStudent(\''+id+'\')">Archive student (inactive)</button>')}
+var ownerPrev3Ref=null;
+
+function owner(){var h=ownerPrev3();if(!LOADED||!CENTRE)return h;
+h=h.replace('<div class="card"><div class="num">'+ALLS.length+'</div><div class="mute">Students</div></div>','<div class="card" role="button" tabindex="0" style="cursor:pointer" onclick="openPage(\'students\')"><div class="num">'+ALLS.length+'</div><div class="mute">Students ›</div></div>');
+return '<button style="margin-bottom:12px" onclick="openPage(\'students\')">All students ('+ALLS.length+')</button>'+h}
 (function(){if(!window.supabase){render();return}
 sb=supabase.createClient(SB_URL,SB_KEY);DB=sb;
 sb.auth.onAuthStateChange(function(ev,ses){if(ev==='PASSWORD_RECOVERY')st.recovery=1;USER=ses?ses.user:null;OWNER=!!(USER&&USER.email);LOADED=false;S=[];KIDS=[];st.tab=OWNER?'fees':'parent';render();if(USER)setTimeout(loadAll,0)});
