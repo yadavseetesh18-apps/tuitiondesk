@@ -623,6 +623,45 @@ function owner(){var keep=S,h;S=ALLS;try{h=ownerOld()}finally{S=keep}
 h=h.replace('<h2 style="margin-top:16px">Referral enquiries</h2>','<div class="grid" style="margin-top:12px"><button onclick="reportSheet()">Monthly report</button><button class="ghost" onclick="exportSheet()">Export data</button></div><button class="ghost" style="margin-top:10px" onclick="announceSheet()">Send announcement</button><h2 style="margin-top:16px">Referral enquiries</h2>');
 h=h.replace('onclick="postHW()">Post homework to all</button>','onclick="postHW()">Post homework</button><button class="ghost" style="margin-bottom:8px" onclick="hwCheck()">Homework check (done / not done)</button>');
 return h.replace('<h2 style="margin-top:16px">Students</h2>',batchSection()+'<h2 style="margin-top:16px">Students</h2>')+archSection()+installCard()}
+
+/* ===== New session: promote students to the next batch ===== */
+st.pr=null;st.undo=null;
+function chunk(a,n){var o=[];for(var i=0;i<a.length;i+=n)o.push(a.slice(i,i+n));return o}
+var _bsPrev=batchSection;
+batchSection=function(){return _bsPrev()+'<button class="ghost" style="margin-bottom:8px" onclick="promoteSheet()">New session (promote students)</button>'};
+function promoteSheet(keep){if(!keep||!st.pr)st.pr={map:{},fee:false};
+var ids=BATCHES.map(function(b){return b.id}).filter(function(id){return bStud(id).length});if(bStud('none').length)ids.push('none');
+if(!ids.length){toast('No students in any batch yet');return}
+var h='<p class="mute" style="margin-bottom:8px">Move whole batches to the next class in one go. Create the new batches first (Owner tab, Add batch). Nothing changes until you confirm, and you can undo right after.</p><button class="ghost" style="margin-bottom:10px" onclick="exportSheet()">Backup my data first (Export)</button><div class="card">';
+ids.forEach(function(id){var n=bStud(id).length,cur=st.pr.map[id]||id;
+h+='<label class="mute" for="ps_'+id+'">'+esc(id==='none'?'No batch':bName(id))+' ('+n+' students) moves to</label><select id="ps_'+id+'"><option value="'+id+'"'+(cur===id?' selected':'')+'>Stay where they are</option>';
+BATCHES.forEach(function(b){if(b.id!==id)h+='<option value="'+b.id+'"'+(cur===b.id?' selected':'')+'>'+esc(b.name)+'</option>'});
+if(id!=='none')h+='<option value="none"'+(cur==='none'?' selected':'')+'>No batch</option>';
+h+='<option value="__archive"'+(cur==='__archive'?' selected':'')+'>Archive (course finished)</option></select>'});
+h+='<label class="mute" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="pfee" style="width:20px;height:20px;margin:0"'+(st.pr.fee?' checked':'')+'> Also set the monthly fee to the new batch’s default fee</label></div>';
+sheet('New session',h+'<button onclick="promoteReview()">Review</button>')}
+function promoteReview(){var map={};BATCHES.map(function(b){return b.id}).concat(['none']).forEach(function(id){var el=$('ps_'+id);if(el&&el.value!==id)map[id]=el.value});
+st.pr.map=map;st.pr.fee=!!($('pfee')&&$('pfee').checked);var srcs=Object.keys(map);
+if(!srcs.length){toast('Nothing to move. Pick a new batch for at least one batch.');return}
+var h='<p class="mute" style="margin-bottom:8px">Untick any student who should stay, for example a child who repeats the class.</p>';
+srcs.forEach(function(src){var to=map[src];h+='<div class="card"><h3>'+esc(src==='none'?'No batch':bName(src))+' → '+esc(to==='__archive'?'Archive':(to==='none'?'No batch':bName(to)))+'</h3>';
+bStud(src).forEach(function(s){h+='<div class="row"><label for="pm_'+s.id+'">'+esc(s.n)+'</label><input type="checkbox" id="pm_'+s.id+'" checked style="width:22px;height:22px;margin:0"></div>'});h+='</div>'});
+sheet('Review',h+'<button style="margin-bottom:8px" onclick="promoteApply()">Apply</button><button class="ghost" onclick="promoteSheet(true)">Back</button>')}
+async function promoteApply(){var plan=[];Object.keys(st.pr.map).forEach(function(src){bStud(src).forEach(function(s){var el=$('pm_'+s.id);if(el&&el.checked)plan.push({s:s,to:st.pr.map[src]})})});
+if(!plan.length){toast('Select at least one student');return}
+if(!confirm('Move '+plan.length+' students? You can undo right after.'))return;
+var by={},q=[];plan.forEach(function(p){(by[p.to]=by[p.to]||[]).push(p.s.id)});
+Object.keys(by).forEach(function(to){var row=to==='__archive'?{active:false}:{batch_id:to==='none'?null:to};
+if(to!=='__archive'&&st.pr.fee){var b=bById(to);if(b&&b.monthly_fee)row.monthly_fee=b.monthly_fee}
+chunk(by[to],50).forEach(function(c){q.push(sb.from('students').update(row).in('id',c))})});
+st.undo=plan.map(function(p){return {id:p.s.id,batch_id:p.s.batchId||null,monthly_fee:p.s.monthly,active:true}});
+if(!(await w(q)))return;
+var h='<div class="card"><b class="num" style="font-size:24px">'+plan.length+' students moved</b><div class="mute" style="margin-top:6px">'+Object.keys(by).map(function(to){return by[to].length+' → '+esc(to==='__archive'?'Archive':(to==='none'?'No batch':bName(to)))}).join('<br>')+'</div></div><p class="mute" style="margin-bottom:8px">Their attendance, test and payment history stays with them. Check Fees and Attendance for the new batches.</p><button class="ghost" onclick="promoteUndo()">Undo this change</button>';
+st.pr=null;sheet('Done',h)}
+async function promoteUndo(){var u=st.undo;if(!u||!u.length){toast('Nothing to undo');return}
+var g={},q=[];u.forEach(function(x){var k=(x.batch_id||'')+'|'+x.monthly_fee;(g[k]=g[k]||{row:{batch_id:x.batch_id,monthly_fee:x.monthly_fee,active:true},ids:[]}).ids.push(x.id)});
+Object.keys(g).forEach(function(k){chunk(g[k].ids,50).forEach(function(c){q.push(sb.from('students').update(g[k].row).in('id',c))})});
+if(await w(q)){st.undo=null;closeSheet();toast('Change undone')}}
 (function(){if(!window.supabase){render();return}
 sb=supabase.createClient(SB_URL,SB_KEY);DB=sb;
 sb.auth.onAuthStateChange(function(ev,ses){if(ev==='PASSWORD_RECOVERY')st.recovery=1;USER=ses?ses.user:null;OWNER=!!(USER&&USER.email);LOADED=false;S=[];KIDS=[];st.tab=OWNER?'fees':'parent';render();if(USER)setTimeout(loadAll,0)});
