@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ClassOrbitX</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#F6F4EE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141829" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ClassOrbitX">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Hind:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F6F4EE;--card:#FFFFFF;--ink:#1D2547;--mute:#6A6F85;--line:#E3E0D6;--accent:#23305E;--onaccent:#fff;--gold:#F0A21B;--green:#1E8E5A;--greenbg:#DDF1E6;--red:#C8452F;--redbg:#FBE4DE;--amber:#8A5A00;--amberbg:#FDF0D0;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141829;--card:#1D2238;--ink:#EEF0F8;--mute:#9AA0BA;--line:#2C3250;--accent:#F0A21B;--onaccent:#1D2547;--gold:#F0A21B;--green:#4FC48A;--greenbg:#173A2B;--red:#F08A74;--redbg:#44221B;--amber:#F0C36A;--amberbg:#3F3213}}
+:root[data-theme="dark"]{--bg:#141829;--card:#1D2238;--ink:#EEF0F8;--mute:#9AA0BA;--line:#2C3250;--accent:#F0A21B;--onaccent:#1D2547;--gold:#F0A21B;--green:#4FC48A;--greenbg:#173A2B;--red:#F08A74;--redbg:#44221B;--amber:#F0C36A;--amberbg:#3F3213}
+*{box-sizing:border-box;margin:0}
+html{color-scheme:light dark}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.45 Hind,system-ui,sans-serif;padding-bottom:calc(76px + env(safe-area-inset-bottom,0px));max-width:560px;margin:0 auto;min-height:100vh}
+h1,h2,h3,.num{font-family:'Bricolage Grotesque',Hind,system-ui,sans-serif;letter-spacing:-.01em}
+header{padding:16px 18px 6px;display:flex;justify-content:space-between;align-items:baseline}
+header h1{font-size:22px}header small{color:var(--mute);font-size:13px}
+main{padding:8px 16px 16px}
+h2{font-size:20px;margin:6px 0 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.hero{background:var(--accent);color:var(--onaccent);border:0}
+.hero .num{font-size:38px;line-height:1.1}
+.hero small{opacity:.8}
+.row{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.row+.row{border-top:1px solid var(--line);margin-top:10px;padding-top:10px}
+.mute{color:var(--mute);font-size:14px}
+.chip{display:inline-block;font-size:12.5px;font-weight:600;padding:2px 9px;border-radius:99px;background:var(--amberbg);color:var(--amber);white-space:nowrap}
+.chip.red{background:var(--redbg);color:var(--red)}.chip.green{background:var(--greenbg);color:var(--green)}
+button,.btn{font:600 16px Hind,sans-serif;border:0;border-radius:12px;padding:13px 16px;background:var(--accent);color:var(--onaccent);width:100%;cursor:pointer;text-decoration:none;display:block;text-align:center}
+button.small,.btn.small{width:auto;padding:7px 12px;font-size:14px;display:inline-block}
+.btn.wa{background:#1FA855;color:#fff}
+.btn.ghost,button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+button:focus-visible,.btn:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.pa{display:flex;gap:6px}
+.pa button{width:44px;height:44px;padding:0;border-radius:10px;background:transparent;color:var(--mute);border:1.5px solid var(--line)}
+.pa button.p.on{background:var(--green);border-color:var(--green);color:#fff}
+.pa button.a.on{background:var(--red);border-color:var(--red);color:#fff}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:6px}
+.chips button{width:auto;white-space:nowrap;padding:8px 14px;background:var(--card);color:var(--ink);border:1px solid var(--line);font-size:14.5px}
+.chips button.on{background:var(--accent);color:var(--onaccent);border-color:var(--accent)}
+.bars{display:flex;align-items:flex-end;gap:10px;height:150px;padding-top:8px}
+.bars div.c{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;font-size:12px;color:var(--mute)}
+.bars i{display:block;width:100%;border-radius:6px 6px 0 0;background:var(--line)}
+.bars .c.last i{background:var(--gold)}.bars b{font-size:13px;color:var(--ink);margin-bottom:3px}
+.split{display:flex;height:14px;border-radius:99px;overflow:hidden;background:var(--line);margin:10px 0 6px}
+.split i{display:block}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid .card{margin:0}.grid .num{font-size:28px}
+nav{position:fixed;bottom:0;left:0;right:0;max-width:560px;margin:0 auto;background:var(--card);border-top:1px solid var(--line);display:flex;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+nav button{flex:1;background:none;color:var(--mute);padding:9px 2px;font-size:13px;border-radius:10px;position:relative}
+nav button.on{color:var(--ink);font-weight:600}
+nav button.on::after{content:"";position:absolute;left:30%;right:30%;top:0;height:3px;border-radius:3px;background:var(--gold)}
+.sheetbg{position:fixed;inset:0;background:rgba(10,14,30,.5);display:none;align-items:flex-end;justify-content:center;z-index:20}
+.sheetbg.open{display:flex}
+.sheet{background:var(--bg);width:100%;max-width:560px;border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));max-height:80vh;overflow:auto}
+.sheet .row .btn{min-width:84px}.sent{opacity:.6}
+.prog{height:10px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:8px}.prog i{display:block;height:100%;background:var(--green)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(90px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:99px;font-size:14px;z-index:30;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+select{font:500 16px Hind,sans-serif;width:100%;padding:11px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);margin-bottom:12px}
+input,textarea{font:500 16px Hind,sans-serif;width:100%;padding:11px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);margin:4px 0 10px}
+input:focus-visible,textarea:focus-visible{outline:3px solid var(--gold);outline-offset:1px}
+.row label{margin:0}.row input{margin:0}
+</style>
+</head>
+<body>
+<header><h1>ClassOrbitX</h1><small id="who"></small></header>
+<main id="main"></main>
+<nav id="nav"></nav>
+<div class="sheetbg" id="sbg"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+var NOW=new Date();NOW.setHours(0,0,0,0);
+var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],MAX=50,BATCH='Today’s batch';
+var DB=null,OWNER=false,S=[],ENQ=[],CFG={name:'',upi:'',collected:0},st={tab:'parent',att:{},sel:null,pv:null,pcode:''},READY=false,LOADED=false;
+var $=function(i){return document.getElementById(i)};
+function esc(t){return String(t==null?'':t).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function inr(n){return '₹'+Number(n||0).toLocaleString('en-IN')}
+function late(s){return s.due?Math.max(0,Math.round((NOW-new Date(s.due))/864e5)):0}
+function dfmt(s){var d=new Date(s);return d.getDate()+' '+MON[d.getMonth()]}
+function cname(){return CFG.name||'our tuition centre'}
+function wa(ph,msg){return 'https://wa.me/'+ph+'?text='+encodeURIComponent(msg)}
+function toast(t){var e=$('toast');e.textContent=t;e.className='toast show';setTimeout(function(){e.className='toast'},2400)}
+function sheet(title,html){$('sheet').innerHTML='<h2>'+title+'</h2>'+html+'<button class="ghost" style="margin-top:12px" onclick="closeSheet()">Close</button>';$('sbg').className='sheetbg open'}
+function closeSheet(){$('sbg').className='sheetbg'}
+$('sbg').addEventListener('click',function(e){if(e.target===this)closeSheet()});
+function go(t){st.tab=t;render()}
+function sentLink(el){el.parentNode.parentNode.classList.add('sent');el.textContent='Sent'}
+function pending(){return S.filter(function(s){return s.fee>0}).sort(function(a,b){return late(b)-late(a)})}
+function lastSc(s){return (s.sc||[]).length?s.sc[s.sc.length-1]:0}
+function rank(s){return S.slice().sort(function(a,b){return lastSc(b)-lastSc(a)}).map(function(x){return x.id}).indexOf(s.id)+1}
+function me(){var f=S.filter(function(s){return s.id===st.sel})[0];return f||S[0]}
+function newCode(){var c='ABCDEFGHJKMNPQRSTUVWXYZ23456789',o='';for(var i=0;i<6;i++)o+=c[Math.floor(Math.random()*c.length)];return o}
+function recOf(s){var r={};['n','par','ph','fee','due','att','sc','hw','code'].forEach(function(k){r[k]=s[k]});return r}
+function pvOf(s){return {n:s.n,att:s.att,sc:s.sc,hw:s.hw,fee:s.fee,due:s.due||'',upi:CFG.upi||'',centre:CFG.name||''}}
+function save(s){return Promise.all([DB.doc('students/'+s.id).set(recOf(s)),DB.doc('pv/'+s.code).set(pvOf(s))])}
+function fail(e){toast('Could not save. '+(e&&e.code==='quota_exceeded'?'Storage is full.':'Check your connection and try again.'))}
+function saveCfg(){return DB.doc('cfg/main').set(CFG)}
+
+/* Empty state */
+function empty(){return '<div class="card"><h3>No students yet</h3><p class="mute" style="margin:6px 0 12px">Add your first student, or load 10 sample students to try the app.</p><button onclick="addStudent()" style="margin-bottom:8px">Add student</button><button class="ghost" onclick="seed()">Load sample students</button></div>'}
+function gate(){if(!DB)return '<div class="card"><h3>Sign in to use ClassOrbitX</h3><p class="mute" style="margin-top:6px">Open this page from its Claude link while signed in. Saved data works only there.</p></div>';if(!LOADED)return '<p class="mute">Loading…</p>';return ''}
+
+/* Fees */
+function fees(){var g=gate();if(g)return g;if(!S.length)return empty();var p=pending(),tot=p.reduce(function(a,s){return a+s.fee},0);
+var h='<div class="card hero"><small>Pending fees</small><div class="num">'+inr(tot)+'</div><small>'+p.length+' students owe fees</small></div>';
+h+='<button onclick="remindAll()" style="margin-bottom:12px;background:#1FA855;color:#fff">Send WhatsApp reminder to all</button><div class="card">';
+if(!p.length)h+='<p class="mute">All fees are paid. Nothing to chase today.</p>';
+p.forEach(function(s){var d=late(s);h+='<div class="row"><div><b>'+esc(s.n)+'</b><div class="mute">Due '+dfmt(s.due)+(s.paidPart>0?' · '+inr(s.paidPart)+' paid':'')+'</div></div><div style="text-align:right"><b class="num">'+inr(s.fee)+'</b><div><span class="chip'+(d>14?' red':'')+'">'+d+' days late</span> <button class="small ghost" onclick="markPaid(\''+s.id+'\')">Paid</button> <button class="small ghost" onclick="partPay(\''+s.id+'\')">Part</button></div></div></div>'});
+return h+'</div>'}
+function remindMsg(s){return 'Dear '+s.par+', a gentle reminder from '+cname()+': '+s.n+'’s fee of '+inr(s.fee)+' was due on '+dfmt(s.due)+' ('+late(s)+' days ago).'+(CFG.upi?' You can pay by UPI to '+CFG.upi+'.':'')+' Thank you!'}
+function remindAll(){var h='<p class="mute" style="margin-bottom:8px">WhatsApp opens one chat at a time. Tap Send for each parent.</p><div class="card">';
+pending().forEach(function(s){h+='<div class="row"><div><b>'+esc(s.par)+'</b><div class="mute">'+esc(s.n)+' · '+inr(s.fee)+'</div></div><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(s.ph,remindMsg(s))+'" onclick="sentLink(this)">Send</a></div>'});
+sheet('Fee reminders',h+'</div>')}
+function markPaid(id){var s=S.filter(function(x){return x.id===id})[0];if(!s||!confirm('Mark '+s.n+'’s '+inr(s.fee)+' as paid?'))return;
+CFG.collected=(CFG.collected||0)+s.fee;s.fee=0;s.due='';Promise.all([save(s),saveCfg()]).then(function(){toast('Payment recorded')}).catch(fail)}
+
+/* Attendance */
+function attendance(){var g=gate();if(g)return g;if(!S.length)return empty();
+var h='<h2>'+BATCH+'</h2><p class="mute" style="margin:-6px 0 10px">'+dfmt(NOW)+'</p><div class="card">';
+S.forEach(function(s){var v=st.att[s.id];h+='<div class="row"><b>'+esc(s.n)+'</b><div class="pa"><button class="p'+(v==='P'?' on':'')+'" aria-label="Present" onclick="mark(\''+s.id+'\',\'P\')">P</button><button class="a'+(v==='A'?' on':'')+'" aria-label="Absent" onclick="mark(\''+s.id+'\',\'A\')">A</button></div></div>'});
+var m=S.filter(function(s){return st.att[s.id]}).length;
+return h+'</div><button onclick="saveAtt()">Save attendance ('+m+'/'+S.length+' marked)</button>'}
+function mark(id,v){st.att[id]=v;render()}
+function saveAtt(){var un=S.filter(function(s){return !st.att[s.id]});if(un.length){toast('Mark all students first: '+un.length+' left');return}
+var ab=[];S.forEach(function(s){s.att=[(s.att[0]||0)+(st.att[s.id]==='P'?1:0),(s.att[1]||0)+1];if(st.att[s.id]==='A')ab.push(s)});
+Promise.all(S.map(save)).then(function(){st.att={};render();
+if(!ab.length){toast('Saved. Everyone was present');return}
+var h='<p class="mute" style="margin-bottom:8px">Attendance saved. Send an absent alert to each parent.</p><div class="card">';
+ab.forEach(function(s){h+='<div class="row"><div><b>'+esc(s.par)+'</b><div class="mute">'+esc(s.n)+' was absent</div></div><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(s.ph,'Dear '+s.par+', '+s.n+' was absent from today’s class at '+cname()+' ('+dfmt(NOW)+'). Please let us know if all is well.')+'" onclick="sentLink(this)">Send</a></div>'});
+sheet('Absent alerts',h+'</div>')}).catch(fail)}
+
+/* Tests */
+function tests(){var g=gate();if(g)return g;if(!S.length)return empty();var s=me(),sc=(s.sc||[]),last=lastSc(s),d=sc.length>1?last-sc[sc.length-2]:0;
+var h='<div class="chips">';S.forEach(function(x){h+='<button class="'+(s.id===x.id?'on':'')+'" onclick="st.sel=\''+x.id+'\';render()">'+esc(x.n.split(' ')[0])+'</button>'});h+='</div>';
+h+='<div class="card hero"><small>'+esc(s.n)+' · this week</small><div class="row" style="border:0;margin:0;padding:0"><div class="num">'+last+'/'+MAX+'</div><div style="text-align:right"><div class="num">#'+rank(s)+'</div><small>of '+S.length+' in class</small></div></div><small>'+(sc.length>1?(d>=0?'Up ':'Down ')+Math.abs(d)+' marks from last week':'First test recorded')+'</small></div>';
+h+='<div class="card"><h3>Last 6 tests</h3><div class="bars">';
+sc.slice(-6).forEach(function(v,i,a){h+='<div class="c'+(i===a.length-1?' last':'')+'"><b>'+v+'</b><i style="height:'+(v/MAX*100)+'%"></i>T'+(sc.length-a.length+i+1)+'</div>'});
+if(!sc.length)h+='<p class="mute">No scores yet.</p>';
+h+='</div></div><a class="btn wa" target="_blank" rel="noopener" style="margin-bottom:8px" href="'+wa(s.ph,cname()+' · Weekly report\n'+s.n+'\nScore: '+last+'/'+MAX+'\nRank: '+rank(s)+' of '+S.length+'\nLast tests: '+sc.slice(-6).join(', '))+'">Share report on WhatsApp</a><button class="ghost" onclick="addScores()">Enter this week’s scores</button>';return h}
+function addScores(){var h='<p class="mute" style="margin-bottom:8px">Marks out of '+MAX+'. Leave blank to skip a student.</p><div class="card">';
+S.forEach(function(s){h+='<div class="row"><label for="sc_'+s.id+'">'+esc(s.n)+'</label><input id="sc_'+s.id+'" type="number" inputmode="numeric" min="0" max="'+MAX+'" style="width:80px"></div>'});
+sheet('New test scores',h+'</div><button style="margin-top:10px" onclick="saveScores()">Save scores</button>')}
+function saveScores(){var j=[];S.forEach(function(s){var v=$('sc_'+s.id).value;if(v!==''){v=Math.min(MAX,Math.max(0,+v));s.sc=(s.sc||[]).concat([v]).slice(-6);j.push(save(s))}});
+if(!j.length){toast('Enter at least one score');return}Promise.all(j).then(function(){closeSheet();toast('Scores saved')}).catch(fail)}
+
+/* Parent view */
+function parentTab(){var p=st.pv,h='';
+if(!p){h='<div class="card"><h3>Parent login</h3><p class="mute" style="margin:6px 0 10px">Enter the 6-character code given by your tuition centre.</p><input id="pcode" maxlength="6" autocapitalize="characters" placeholder="e.g. K7M2QX" value="'+esc(st.pcode)+'" style="margin-bottom:10px;text-transform:uppercase"><button onclick="loadPV($(\'pcode\').value)">View my child</button></div>';return h}
+var pc=p.att[1]?Math.round(p.att[0]/p.att[1]*100):0,d=late(p);
+h+='<div class="row" style="border:0;margin:0 0 10px"><h2 style="margin:0">'+esc(p.n)+(p.batchName?' <span class="chip">'+esc(p.batchName)+'</span>':'')+'</h2></div>';
+h+='<div class="card"><div class="row" style="border:0;margin:0;padding:0"><span class="mute">Attendance</span><b class="num" style="font-size:28px">'+pc+'%</b></div><div class="prog"><i style="width:'+pc+'%"></i></div><p class="mute" style="margin-top:6px">'+p.att[0]+' of '+p.att[1]+' classes attended</p></div>';
+h+='<div class="card"><h3>Homework</h3>';(p.hw||[]).forEach(function(x){h+='<div class="row"><span>'+esc(x)+'</span></div>'});if(!(p.hw||[]).length)h+='<p class="mute">No homework right now.</p>';h+='</div>';
+if(p.fee>0){h+='<div class="card"><div class="row" style="border:0;margin:0;padding:0"><div><div class="mute">Fee due</div><b class="num" style="font-size:28px">'+inr(p.fee)+'</b></div><span class="chip red">'+d+' days late</span></div>';
+h+=p.upi?'<a class="btn" style="margin-top:12px" href="upi://pay?pa='+encodeURIComponent(p.upi)+'&pn='+encodeURIComponent(p.centre||'Tuition')+'&am='+p.fee+'&cu=INR&tn='+encodeURIComponent(p.n+' fee')+'" onclick="toast(\'Opening your UPI app…\')">Pay '+inr(p.fee)+' by UPI</a><p class="mute" style="margin-top:8px;text-align:center">Works on a phone with a UPI app installed</p>':'<p class="mute" style="margin-top:8px">The centre has not added a UPI ID yet. Please pay at the centre.</p>';h+='</div>'}
+else h+='<div class="card"><span class="chip green">Fees paid</span><p class="mute" style="margin-top:6px">No fee due. Thank you!</p></div>';
+return h+'<button class="ghost" onclick="loadAll()">Refresh</button>'}
+function loadPV(c){c=(c||'').trim().toUpperCase();if(!c)return;if(!DB){toast('Not signed in');return}
+DB.doc('pv/'+c).get().then(function(d){if(!d.exists){toast('Code not found. Check with your tuition centre');return}st.pv=d.data();st.pcode=c;try{localStorage.setItem('td_code',c)}catch(e){}render()}).catch(function(){toast('Could not load. Try again')})}
+
+/* Owner */
+function owner(){var g=gate();if(g)return g;var tot=pending().reduce(function(a,s){return a+s.fee},0),col=CFG.collected||0,all=col+tot,cp=all?Math.round(col/all*100):0;
+var h='<div class="card"><h3>Fees collected vs pending</h3><div class="split"><i style="width:'+cp+'%;background:var(--green)"></i><i style="width:'+(100-cp)+'%;background:var(--red)"></i></div><div class="row" style="border:0;margin:0;padding:0"><div><b class="num" style="font-size:22px;color:var(--green)">'+inr(col)+'</b><div class="mute">Collected</div></div><div style="text-align:right"><b class="num" style="font-size:22px;color:var(--red)">'+inr(tot)+'</b><div class="mute">Pending</div></div></div></div>';
+h+='<div class="grid"><div class="card"><div class="num">'+S.length+'</div><div class="mute">Students</div></div><div class="card"><div class="num">'+pending().length+'</div><div class="mute">Fees pending</div></div></div>';
+h+='<h2 style="margin-top:16px">Referral enquiries</h2><div class="card">';if(!ENQ.length)h+='<p class="mute">No enquiries yet.</p>';
+ENQ.forEach(function(r){h+='<div class="row"><div><b>'+esc(r.n)+'</b><div class="mute">'+esc(r.cls)+' · via '+esc(r.by)+'</div></div><div style="text-align:right"><span class="chip'+(r.st==='New'?' red':' green')+'">'+esc(r.st)+'</span><div style="margin-top:6px"><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(r.ph,'Hello! Thank you for your interest in '+cname()+'. When can we schedule a free demo class for '+r.n+'?')+'" onclick="enqDone(\''+r.id+'\')">WhatsApp</a></div></div></div>'});
+h+='</div><button class="ghost" onclick="addEnq()">Add enquiry</button><h2 style="margin-top:16px">Students and parent codes</h2><div class="card">';
+S.forEach(function(s){h+='<div class="row"><div><b>'+esc(s.n)+'</b><div class="mute">'+esc(s.par)+'</div></div><div style="text-align:right"><b class="num">'+esc(s.code)+'</b><div><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(s.ph,'Dear '+s.par+', your ClassOrbitX code for '+s.n+' at '+cname()+' is '+s.code+'. Open the ClassOrbitX link and enter this code to see attendance, homework and fees.')+'">Share code</a></div></div></div>'});
+if(!S.length)h+='<p class="mute">No students yet.</p>';
+return h+'</div><button onclick="addStudent()" style="margin-bottom:8px">Add student</button><button class="ghost" style="margin-bottom:8px" onclick="postHW()">Post homework to all</button><button class="ghost" onclick="settings()">Centre name and UPI ID</button>'}
+function addStudent(){sheet('Add student','<div class="card"><label class="mute" for="f1">Student name</label><input id="f1"><label class="mute" for="f2">Parent name</label><input id="f2"><label class="mute" for="f3">Parent WhatsApp number (10 digits)</label><input id="f3" type="tel" inputmode="numeric" maxlength="10"><label class="mute" for="f4">Fee pending (₹, 0 if none)</label><input id="f4" type="number" inputmode="numeric" value="0"><label class="mute" for="f5">Fee due date</label><input id="f5" type="date"></div><button onclick="doAdd()">Save student</button>')}
+function doAdd(){var n=$('f1').value.trim(),par=$('f2').value.trim(),ph=$('f3').value.replace(/\D/g,''),fee=+$('f4').value||0,due=$('f5').value;
+if(!n||!par||ph.length!==10){toast('Enter name, parent name and a 10-digit number');return}if(fee>0&&!due){toast('Pick a fee due date');return}
+var s={id:DB.collection('students').doc().id,n:n,par:par,ph:'91'+ph,fee:fee,due:fee>0?due:'',att:[0,0],sc:[],hw:[],code:newCode()};
+save(s).then(function(){closeSheet();toast('Student added')}).catch(fail)}
+function postHW(){sheet('Post homework','<div class="card"><label class="mute" for="hw">Homework for all students</label><textarea id="hw" rows="3" placeholder="e.g. Algebra ex. 4.2, Q1–10 (due Friday)"></textarea></div><button onclick="doHW()">Post to all parents</button>')}
+function doHW(){var t=$('hw').value.trim();if(!t){toast('Write the homework first');return}
+Promise.all(S.map(function(s){s.hw=[t].concat(s.hw||[]).slice(0,3);return save(s)})).then(function(){closeSheet();toast('Homework posted')}).catch(fail)}
+function settings(){sheet('Centre settings','<div class="card"><label class="mute" for="c1">Centre name</label><input id="c1" value="'+esc(CFG.name)+'"><label class="mute" for="c2">UPI ID for fee payments</label><input id="c2" value="'+esc(CFG.upi)+'" placeholder="name@bank" autocapitalize="none"></div><button onclick="doCfg()">Save settings</button>')}
+function doCfg(){CFG.name=$('c1').value.trim();CFG.upi=$('c2').value.trim();Promise.all([saveCfg()].concat(S.map(save))).then(function(){closeSheet();toast('Settings saved')}).catch(fail)}
+function addEnq(){sheet('Add enquiry','<div class="card"><label class="mute" for="e1">Child’s name</label><input id="e1"><label class="mute" for="e2">Class</label><input id="e2" placeholder="Class 9"><label class="mute" for="e3">Referred by</label><input id="e3"><label class="mute" for="e4">WhatsApp number (10 digits)</label><input id="e4" type="tel" inputmode="numeric" maxlength="10"></div><button onclick="doEnq()">Save enquiry</button>')}
+function doEnq(){var ph=$('e4').value.replace(/\D/g,''),n=$('e1').value.trim();if(!n||ph.length!==10){toast('Enter a name and a 10-digit number');return}
+DB.collection('enq').add({n:n,cls:$('e2').value.trim()||'—',by:$('e3').value.trim()||'—',ph:'91'+ph,st:'New'}).then(function(){closeSheet();toast('Enquiry added')}).catch(fail)}
+function enqDone(id){DB.doc('enq/'+id).update({st:'Contacted'}).catch(function(){})}
+function seed(){var o=function(n){return new Date(NOW-n*864e5).toISOString().slice(0,10)},d=[['Aarav Mehta','Mr. Mehta',2500,22,[21,24],[34,38,36,41,39,44]],['Diya Nair','Mrs. Nair',2500,15,[23,24],[40,42,45,44,46,48]],['Kabir Singh','Mr. Singh',5000,29,[17,24],[28,30,27,33,31,35]],['Ananya Iyer','Mrs. Iyer',0,0,[24,24],[44,46,47,45,48,49]],['Rohan Gupta','Mr. Gupta',2500,7,[20,24],[31,33,35,32,36,37]],['Ishita Verma','Mrs. Verma',0,0,[22,24],[38,39,42,43,41,45]],['Vihaan Patel','Mr. Patel',2500,3,[19,24],[25,29,31,30,34,36]],['Saanvi Reddy','Mrs. Reddy',0,0,[23,24],[42,41,44,46,45,47]],['Arjun Das','Mr. Das',5000,26,[18,24],[22,26,25,29,28,32]],['Meera Joshi','Mrs. Joshi',0,0,[22,24],[36,37,40,39,42,43]]];
+Promise.all(d.map(function(x,i){return save({id:'s'+(i+1)+newCode().toLowerCase(),n:x[0],par:x[1],ph:'9198765000'+(10+i),fee:x[2],due:x[2]?o(x[3]):'',att:x[4],sc:x[5],hw:['Algebra ex. 4.2, Q1–10 (due tomorrow)','Science chapter 6 notes (Fri)'],code:newCode()})})).then(function(){toast('Sample students loaded')}).catch(fail)}
+
+/* ===== Supabase version: auth + database ===== */
+var SB_URL='https://wcunwwppublgrvtloukt.supabase.co',SB_KEY='sb_publishable_-R66TUalzLHug1eyZiZUGw_Kl4os2KY';
+var sb=null,USER=null,CENTRE=null,HW=[],KIDS=[];st.am='owner';st.tab='fees';
+function today(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function gate(){if(!sb)return '<div class="card">Could not load the database library. Check your internet.</div>';if(!LOADED)return '<p class="mute">Loading…</p>';return ''}
+function empty(){return '<div class="card"><h3>No students yet</h3><p class="mute" style="margin:6px 0 12px">Add your first student, or load 10 demo students to try the app.</p><button onclick="addStudent()" style="margin-bottom:8px">Add student</button><button class="ghost" onclick="seedDemo()">Load demo students</button></div>'}
+
+/* Login */
+function loginUI(){var h='<div class="chips"><button class="'+(st.am==='owner'?'on':'')+'" onclick="st.am=\'owner\';render()">Owner</button><button class="'+(st.am==='parent'?'on':'')+'" onclick="st.am=\'parent\';st.otp=0;render()">Parent</button></div><div class="card">';
+if(st.am==='parent'){if(!st.otp)h+='<h3>Parent login</h3><p class="mute" style="margin:4px 0 8px">Use the mobile number the centre has on file. We will send an OTP.</p><label class="mute" for="lp">Mobile number (10 digits)</label><input id="lp" type="tel" inputmode="numeric" maxlength="10"><button onclick="sendOtp()">Send OTP</button>';
+else h+='<h3>Enter OTP</h3><p class="mute" style="margin:4px 0 8px">Sent to +'+esc(st.ph)+'</p><input id="lo" inputmode="numeric" maxlength="6" aria-label="OTP"><button onclick="verifyOtp()">Verify</button><button class="ghost" style="margin-top:8px" onclick="st.otp=0;render()">Change number</button>'}
+else h+='<h3>Owner login</h3><label class="mute" for="le">Email</label><input id="le" type="email" autocapitalize="none"><label class="mute" for="lw">Password (6+ characters)</label><input id="lw" type="password"><button onclick="signIn()" style="margin-bottom:8px">Sign in</button><button class="ghost" onclick="signUp()" style="margin-bottom:8px">Create owner account</button><button class="ghost" onclick="sendReset()">Forgot password?</button>';
+return h+'</div>'}
+async function signIn(){var r=await sb.auth.signInWithPassword({email:$('le').value.trim(),password:$('lw').value});if(r.error)toast(r.error.message)}
+async function signUp(){var r=await sb.auth.signUp({email:$('le').value.trim(),password:$('lw').value});if(r.error){toast(r.error.message);return}if(!r.data.session)toast('Check your email to confirm, then sign in')}
+async function sendOtp(){var p=$('lp').value.replace(/\D/g,'');if(p.length!==10){toast('Enter a 10-digit number');return}st.ph='91'+p;var r=await sb.auth.signInWithOtp({phone:'+'+st.ph});if(r.error){toast('Could not send OTP: '+r.error.message);return}st.otp=1;render()}
+async function verifyOtp(){var r=await sb.auth.verifyOtp({phone:'+'+st.ph,token:$('lo').value.trim(),type:'sms'});if(r.error)toast(r.error.message)}
+function signOut(){sb.auth.signOut()}
+
+/* Load data */
+function build0(x,att,sc,hw){var a=att.filter(function(r){return r.student_id===x.id});return {id:x.id,n:x.name,par:x.parent_name,ph:x.parent_phone,fee:x.fee_pending||0,due:x.fee_due||'',monthly:x.monthly_fee||0,dueDay:x.due_day||5,join:x.join_date||'',lastBilled:x.last_billed||'',att:[a.filter(function(r){return r.present}).length,a.length],sc:sc.filter(function(r){return r.student_id===x.id}).map(function(r){return r.score}).slice(-6),hw:hw}}
+async function loadAll(skipBill){try{
+var o=await Promise.all([sb.from('students').select('*').order('name'),allRows('attendance','student_id,present,day','day'),allRows('test_scores','*','test_date'),sb.from('homework').select('id,text,batch_id,created_at').order('created_at',{ascending:false}).limit(30),sb.from('centres').select('*').limit(1),sb.from('batches').select('*').order('name'),allRows('homework_status','*','created_at')]);
+for(var i=0;i<o.length;i++)if(o[i].error&&i!==6)throw o[i].error;
+ATTR=o[1].data;SCR=o[2].data;HWS=(o[6]&&!o[6].error)?(o[6].data||[]):[];HWR=o[3].data;HW=HWR.map(function(r){return r.text});BATCHES=o[5].data||[];CENTRE=o[4].data[0]||null;CFG={name:CENTRE?CENTRE.name:'',upi:CENTRE&&CENTRE.upi||'',collected:0};
+var built=o[0].data.map(function(x){return build(x,o[1].data,o[2].data,HWR.filter(function(r){return !r.batch_id||r.batch_id===x.batch_id}).map(function(r){return r.text}).slice(0,3))});
+if(st.bf!=='all'&&st.bf!=='none'&&!BATCHES.some(function(b){return b.id===st.bf}))st.bf='all';if(OWNER){ARCH=built.filter(function(x){return x.active===false});ALLS=built.filter(function(x){return x.active!==false});S=ALLS.filter(inB);if(CENTRE){var e=await Promise.all([sb.from('enquiries').select('*'),allRows('payments','*','paid_on')]);
+ENQ=(e[0].data||[]).map(function(r){return {id:r.id,n:r.child_name,cls:r.class||'—',by:r.referred_by||'—',ph:r.phone,st:r.status}});PAY=e[1].data||[];CFG.collected=(e[1].data||[]).reduce(function(a,r){return a+r.amount},0)}}else KIDS=built;
+}catch(e){toast('Could not load data. '+(e.message||''))}
+LOADED=true;render()}
+async function w(ps){try{var r=await Promise.all(ps);for(var i=0;i<r.length;i++)if(r[i].error)throw r[i].error;await loadAll();return true}catch(e){toast('Could not save. '+(e.message||''));return false}}
+
+/* Owner actions */
+function setupUI(){return '<div class="card"><h3>Set up your centre</h3><p class="mute" style="margin:4px 0 8px">One time only.</p><label class="mute" for="s1">Centre name</label><input id="s1"><label class="mute" for="s2">UPI ID for fee payments</label><input id="s2" placeholder="name@bank" autocapitalize="none"><button onclick="doSetup()">Create centre</button></div>'}
+async function doSetup(){var n=$('s1').value.trim();if(!n){toast('Enter the centre name');return}if(await w([sb.from('centres').insert({name:n,upi:$('s2').value.trim()})]))toast('Centre created')}
+function markPaid(id){var s=S.filter(function(x){return x.id===id})[0];if(!s||!confirm('Mark '+s.n+'’s '+inr(s.fee)+' as paid?'))return;
+w([sb.from('payments').insert({centre_id:CENTRE.id,student_id:id,amount:s.fee}),sb.from('students').update({fee_pending:0,fee_due:null}).eq('id',id)]).then(function(ok){if(ok)toast('Payment recorded')})}
+async function saveAtt(){var un=S.filter(function(s){return !st.att[s.id]});if(un.length){toast('Mark all students first: '+un.length+' left');return}
+var ab=S.filter(function(s){return st.att[s.id]==='A'}),rows=S.map(function(s){return {centre_id:CENTRE.id,student_id:s.id,day:today(),present:st.att[s.id]==='P'}});
+if(!(await w([sb.from('attendance').upsert(rows,{onConflict:'student_id,day'})])))return;st.att={};render();
+if(!ab.length){toast('Saved. Everyone was present');return}
+var h='<p class="mute" style="margin-bottom:8px">Attendance saved. Send an absent alert to each parent.</p><div class="card">';
+ab.forEach(function(s){h+='<div class="row"><div><b>'+esc(s.par)+'</b><div class="mute">'+esc(s.n)+' was absent</div></div><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(s.ph,'Dear '+s.par+', '+s.n+' was absent from today’s class at '+cname()+' ('+dfmt(NOW)+'). Please let us know if all is well.')+'" onclick="sentLink(this)">Send</a></div>'});
+sheet('Absent alerts',h+'</div>')}
+async function saveScores(){var rows=[];S.forEach(function(s){var v=$('sc_'+s.id).value;if(v!=='')rows.push({centre_id:CENTRE.id,student_id:s.id,score:Math.min(MAX,Math.max(0,+v)),max_score:MAX})});
+if(!rows.length){toast('Enter at least one score');return}if(await w([sb.from('test_scores').insert(rows)])){closeSheet();toast('Scores saved')}}
+async function doAdd(){var n=$('f1').value.trim(),par=$('f2').value.trim(),ph=$('f3').value.replace(/\D/g,''),fee=+$('f4').value||0,due=$('f5').value;
+if(!n||!par||ph.length!==10){toast('Enter name, parent name and a 10-digit number');return}if(fee>0&&!due){toast('Pick a fee due date');return}
+if(await w([sb.from('students').insert({centre_id:CENTRE.id,name:n,parent_name:par,parent_phone:'91'+ph,fee_pending:fee,fee_due:fee>0?due:null})])){closeSheet();toast('Student added')}}
+async function doHW(){var t=$('hw').value.trim();if(!t){toast('Write the homework first');return}if(await w([sb.from('homework').insert({centre_id:CENTRE.id,text:t})])){closeSheet();toast('Homework posted')}}
+async function doCfg(){if(await w([sb.from('centres').update({name:$('c1').value.trim(),upi:$('c2').value.trim()}).eq('id',CENTRE.id)])){closeSheet();toast('Settings saved')}}
+async function doEnq(){var ph=$('e4').value.replace(/\D/g,''),n=$('e1').value.trim();if(!n||ph.length!==10){toast('Enter a name and a 10-digit number');return}
+if(await w([sb.from('enquiries').insert({centre_id:CENTRE.id,child_name:n,class:$('e2').value.trim()||null,referred_by:$('e3').value.trim()||null,phone:'91'+ph})])){closeSheet();toast('Enquiry added')}}
+function enqDone(id){sb.from('enquiries').update({status:'Contacted'}).eq('id',id).then(loadAll)}
+
+function ownerOld(){var g=gate();if(g)return g;var tot=pending().reduce(function(a,s){return a+s.fee},0),col=CFG.collected||0,all=col+tot,cp=all?Math.round(col/all*100):0,url=location.href.split('#')[0];
+var h='<div class="card"><h3>Fees collected vs pending</h3><div class="split"><i style="width:'+cp+'%;background:var(--green)"></i><i style="width:'+(100-cp)+'%;background:var(--red)"></i></div><div class="row" style="border:0;margin:0;padding:0"><div><b class="num" style="font-size:22px;color:var(--green)">'+inr(col)+'</b><div class="mute">Collected</div></div><div style="text-align:right"><b class="num" style="font-size:22px;color:var(--red)">'+inr(tot)+'</b><div class="mute">Pending</div></div></div></div>';
+h+='<div class="grid"><div class="card"><div class="num">'+S.length+'</div><div class="mute">Students</div></div><div class="card"><div class="num">'+pending().length+'</div><div class="mute">Fees pending</div></div></div>';
+h+='<h2 style="margin-top:16px">Referral enquiries</h2><div class="card">';if(!ENQ.length)h+='<p class="mute">No enquiries yet.</p>';
+ENQ.forEach(function(r){h+='<div class="row"><div><b>'+esc(r.n)+'</b><div class="mute">'+esc(r.cls)+' · via '+esc(r.by)+'</div></div><div style="text-align:right"><span class="chip'+(r.st==='New'?' red':' green')+'">'+esc(r.st)+'</span><div style="margin-top:6px"><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(r.ph,'Hello! Thank you for your interest in '+cname()+'. When can we schedule a free demo class for '+r.n+'?')+'" onclick="enqDone(\''+r.id+'\')">WhatsApp</a></div></div></div>'});
+h+='</div><button class="ghost" onclick="addEnq()">Add enquiry</button><h2 style="margin-top:16px">Students</h2><div class="card">';
+S.forEach(function(s){h+='<div class="row"><div><b>'+esc(s.n)+'</b> '+(s.fee>0?'<span class="chip red">Due</span>':'<span class="chip green">Clear</span>')+'<div class="mute">'+esc(s.par)+' · '+bName(s.batchId)+' · '+inr(s.monthly)+'/month · '+(s.nextDue?'next due '+dfmt(s.nextDue):'set due date')+'</div></div><span><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(s.ph,'Dear '+s.par+', you can see '+s.n+'’s attendance, homework and fees on ClassOrbitX: '+url+' . Choose Parent and log in with this mobile number.')+'">Invite</a> <button class="small ghost" onclick="editFee(\''+s.id+'\')">Edit</button></span></div>'});
+if(!S.length)h+='<p class="mute">No students yet.</p>';
+return h+'</div><button onclick="addStudent()" style="margin-bottom:8px">Add student</button><button class="ghost" style="margin-bottom:8px" onclick="postHW()">Post homework to all</button><button class="ghost" style="margin-bottom:8px" onclick="settings()">Centre name and UPI ID</button>'+demoBtn()}
+
+/* Parent view (kept from the old renderer, now fed by the database) */
+var parentView=parentTab;
+parentTab=function(){var g=gate();if(g)return g;var L=OWNER?S:KIDS;
+if(!L.length)return '<div class="card"><h3>No child linked</h3><p class="mute" style="margin-top:6px">This mobile number is not linked to a student. Please ask your tuition centre to add it.</p></div>';
+var k=L[st.kid||0]||L[0],h='';if(L.length>1){h='<div class="chips">';L.forEach(function(x,i){h+='<button class="'+(x===k?'on':'')+'" onclick="st.kid='+i+';render()">'+esc(x.n.split(' ')[0])+'</button>'});h+='</div>'}
+st.pv=Object.assign({},k,{upi:CFG.upi,centre:CFG.name,batchName:k.batchId?bName(k.batchId):''});return h+parentView()};
+
+var TABS=[['fees','Fees',fees],['att','Attendance',attendance],['tests','Tests',tests],['parent','Parent',parentTab],['owner','Owner',owner]];
+function render(){var y=window.scrollY;if(st.recovery&&USER){$('nav').style.display='none';$('who').innerHTML='';$('main').innerHTML=recoveryUI();return}
+if(!USER){$('nav').style.display='none';$('who').innerHTML='';$('main').innerHTML=sb?loginUI()+installCard():gate();return}
+$('who').innerHTML=(OWNER&&CENTRE?'<a href="#" onclick="openPage(\'students\');return false" style="color:inherit">Students</a> · ':'')+(OWNER?'Owner':'Parent')+' · <a href="#" onclick="signOut();return false" style="color:inherit">Sign out</a>';
+if(!OWNER)st.tab='parent';$('nav').style.display=OWNER&&CENTRE?'flex':'none';
+if(OWNER&&LOADED&&!CENTRE){$('main').innerHTML=setupUI();return}
+var vis=OWNER?TABS:[TABS[3]];
+$('nav').innerHTML=vis.map(function(t){return '<button class="'+(st.tab===t[0]?'on':'')+'" onclick="go(\''+t[0]+'\')">'+t[1]+'</button>'}).join('');
+if(st.page&&OWNER&&CENTRE&&LOADED){$('nav').style.display='none';$('main').innerHTML=pageHtml();window.scrollTo(0,st.page==='students'?(st.sy||0):0);return}BATCH=(st.bf==='all'||!BATCHES.length)?'Today’s attendance':bName(st.bf)+' · today';var pre=(OWNER&&CENTRE&&['fees','att','tests'].indexOf(st.tab)>=0)?filterBar():'';$('main').innerHTML=pre+TABS.filter(function(t){return t[0]===st.tab})[0][2]();window.scrollTo(0,y)}
+
+/* Demo data tools */
+function iso(n){var d=new Date(NOW-n*864e5);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function hasDemo(){return ALLS.some(function(s){return String(s.ph).indexOf('9198765000')===0})}
+function demoBtn(){return hasDemo()?'<button class="ghost" onclick="removeDemo()">Remove demo students</button>':'<button class="ghost" onclick="seedDemo()">Load demo students</button>'}
+async function seedDemo(){if(!confirm('Add 10 demo students with sample fees, attendance and test scores?'))return;
+var D=[['Aarav Mehta','Mr. Mehta',2500,22,21,[34,38,36,41,39,44]],['Diya Nair','Mrs. Nair',2500,15,23,[40,42,45,44,46,48]],['Kabir Singh','Mr. Singh',5000,29,17,[28,30,27,33,31,35]],['Ananya Iyer','Mrs. Iyer',0,0,24,[44,46,47,45,48,49]],['Rohan Gupta','Mr. Gupta',2500,7,20,[31,33,35,32,36,37]],['Ishita Verma','Mrs. Verma',0,0,22,[38,39,42,43,41,45]],['Vihaan Patel','Mr. Patel',2500,3,19,[25,29,31,30,34,36]],['Saanvi Reddy','Mrs. Reddy',0,0,23,[42,41,44,46,45,47]],['Arjun Das','Mr. Das',5000,26,18,[22,26,25,29,28,32]],['Meera Joshi','Mrs. Joshi',0,0,22,[36,37,40,39,42,43]]];
+var cid=CENTRE.id;
+try{var br=await sb.from('batches').insert([{centre_id:cid,name:'Demo · Class 9 Maths',timing:'Mon–Fri 5:00 PM',monthly_fee:2500},{centre_id:cid,name:'Demo · Class 10 Science',timing:'Mon–Fri 6:30 PM',monthly_fee:2500}]).select('id');if(br.error)throw br.error;var r=await sb.from('students').insert(D.map(function(x,i){return {centre_id:cid,batch_id:br.data[i%2].id,name:x[0],parent_name:x[1],parent_phone:'9198765000'+(10+i),fee_pending:0,fee_due:null,monthly_fee:2500,join_date:x[2]?iso(demoDays(x)):iso(40+i*3),next_due:x[2]?iso(demoDays(x)):afterToday(iso(40+i*3)),paid_part:x[0]==='Rohan Gupta'?1000:0}})).select('id');
+if(r.error)throw r.error;
+var att=[],sc=[],pay=[];
+r.data.forEach(function(s,i){var x=D[i];for(var k=1;k<=24;k++)att.push({centre_id:cid,student_id:s.id,day:iso(k),present:k>24-x[4]});
+x[5].forEach(function(v,j){sc.push({centre_id:cid,student_id:s.id,test_date:iso((5-j)*7),score:v,max_score:MAX})});if(!x[2])for(var q=0;q<5;q++)pay.push({centre_id:cid,student_id:s.id,amount:2500,paid_on:iso(q*30+i)})});
+if(await w([sb.from('attendance').insert(att),sb.from('test_scores').insert(sc),sb.from('payments').insert(pay),
+sb.from('homework').insert([{centre_id:cid,text:'Algebra ex. 4.2, Q1–10 (due tomorrow)'},{centre_id:cid,text:'Science chapter 6 notes (Fri)'}]),
+sb.from('enquiries').insert([{centre_id:cid,child_name:'Tanvi Rao',class:'Class 9',referred_by:'Ananya Iyer’s mother',phone:'9198111000'+1},{centre_id:cid,child_name:'Yash Kulkarni',class:'Class 10',referred_by:'Meera Joshi’s father',phone:'9198111000'+2,status:'Contacted'},{centre_id:cid,child_name:'Pooja Bansal',class:'Class 9',referred_by:'Aarav Mehta’s mother',phone:'9198111000'+3}])]))toast('Demo students loaded')}
+catch(e){toast('Could not load demo. '+(e.message||''));loadAll()}}
+async function removeDemo(){if(!confirm('Remove the demo students and their data? Your real students stay.'))return;
+if(await w([sb.from('students').delete().like('parent_phone','9198765000%'),sb.from('enquiries').delete().like('phone','9198111000%'),sb.from('batches').delete().like('name','Demo ·%')]))toast('Demo data removed')}
+
+/* Monthly fees */
+function sById(id){return ALLS.concat(ARCH).filter(function(x){return x.id===id})[0]}
+function addStudent(){sheet('Add student','<div class="card"><label class="mute" for="f1">Student name</label><input id="f1"><label class="mute" for="f2">Parent name</label><input id="f2"><label class="mute" for="f3">Parent WhatsApp number (10 digits)</label><input id="f3" type="tel" inputmode="numeric" maxlength="10"><label class="mute" for="f6">Monthly fee (₹)</label><input id="f6" type="number" inputmode="numeric"><label class="mute" for="f7">Fee due day of month (1–28)</label><input id="f7" type="number" inputmode="numeric" value="5"><label class="mute" for="f4">Fee pending right now (₹, 0 if none)</label><input id="f4" type="number" inputmode="numeric" value="0"><label class="mute" for="f5">Due date of that pending fee</label><input id="f5" type="date"></div><button onclick="doAdd()">Save student</button>')}
+async function doAdd(){var n=$('f1').value.trim(),par=$('f2').value.trim(),ph=$('f3').value.replace(/\D/g,''),fee=+$('f4').value||0,due=$('f5').value,mf=Math.max(0,+$('f6').value||0),dd=Math.min(28,Math.max(1,+$('f7').value||5));
+if(!n||!par||ph.length!==10){toast('Enter name, parent name and a 10-digit number');return}if(fee>0&&!due){toast('Pick the due date of the pending fee');return}
+if(await w([sb.from('students').insert({centre_id:CENTRE.id,name:n,parent_name:par,parent_phone:'91'+ph,fee_pending:fee,fee_due:fee>0?due:null,monthly_fee:mf,due_day:dd})])){closeSheet();toast('Student added')}}
+async function addMonthFees(){var L=S.filter(function(s){return s.monthly>0});
+if(!L.length){toast('Set monthly fees first: Owner tab, Students, Edit');return}
+var m=today().slice(0,7);
+if(CENTRE.last_fee_month===m&&!confirm('Fees were already added for this month. Adding again will double them. Continue?'))return;
+if(!confirm('Add this month’s fee to '+L.length+' students?'))return;
+var ps=L.map(function(s){return sb.from('students').update({fee_pending:s.fee+s.monthly,fee_due:(s.fee>0&&s.due)?s.due:m+'-'+String(s.dueDay).padStart(2,'0')}).eq('id',s.id)});
+ps.push(sb.from('centres').update({last_fee_month:m}).eq('id',CENTRE.id));
+if(await w(ps))toast('Fees added for '+L.length+' students')}
+function partPay(id){var s=sById(id);if(!s)return;sheet('Part payment','<p class="mute" style="margin-bottom:8px">'+esc(s.n)+' owes '+inr(s.fee)+'</p><div class="card"><label class="mute" for="pp">Amount received (₹)</label><input id="pp" type="number" inputmode="numeric" max="'+s.fee+'"></div><button onclick="doPart(\''+id+'\')">Record payment</button>')}
+async function doPart(id){var s=sById(id),a=+$('pp').value;if(!(a>0)||a>s.fee){toast('Enter an amount up to '+inr(s.fee));return}
+var left=s.fee-a;if(await w([sb.from('payments').insert({centre_id:CENTRE.id,student_id:id,amount:a}),sb.from('students').update({fee_pending:left,fee_due:left>0?s.due:null}).eq('id',id)])){closeSheet();toast(left>0?'Recorded. '+inr(left)+' still due':'Fully paid')}}
+function editFee(id){var s=sById(id);if(!s)return;sheet('Fee settings · '+esc(s.n),'<div class="card"><label class="mute" for="m1">Monthly fee (₹)</label><input id="m1" type="number" inputmode="numeric" value="'+s.monthly+'"><label class="mute" for="m2">Due day of month (1–28)</label><input id="m2" type="number" inputmode="numeric" min="1" max="28" value="'+s.dueDay+'"></div><button onclick="doEditFee(\''+id+'\')">Save</button>')}
+async function doEditFee(id){var mf=Math.max(0,+$('m1').value||0),dd=Math.min(28,Math.max(1,+$('m2').value||5));if(await w([sb.from('students').update({monthly_fee:mf,due_day:dd}).eq('id',id)])){closeSheet();toast('Saved')}}
+async function bulkFee(){var v=prompt('Monthly fee for ALL students (₹)');if(v===null)return;v=Math.max(0,parseInt(v,10)||0);if(!v){toast('Enter a valid amount');return}
+if(await w([sb.from('students').update({monthly_fee:v}).eq('centre_id',CENTRE.id)]))toast('Monthly fee set for all students')}
+function demoBtn(){return '<button class="ghost" style="margin-bottom:8px" onclick="bulkFee()">Set monthly fee for all students</button>'+(hasDemo()?'<button class="ghost" onclick="removeDemo()">Remove demo students</button>':'<button class="ghost" onclick="seedDemo()">Load demo students</button>')}
+
+/* Billing on each student's joining-date day */
+function dayOf(s){return s.join?+s.join.slice(8,10):0}
+function ymd(y,m,d){return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0')}
+function cyc(join,y,m){var dim=new Date(y,m+1,0).getDate();return ymd(y,m,Math.min(+join.slice(8,10),dim))}
+function nextCyc(x){if(!x.lastBilled)return x.join;var d=new Date(+x.lastBilled.slice(0,4),+x.lastBilled.slice(5,7),1);return cyc(x.join,d.getFullYear(),d.getMonth())}
+function latestCyc(join){var t=today(),x={join:join,lastBilled:''},n=nextCyc(x),last=null,g=0;while(n<=t&&g++<600){last=n;x.lastBilled=n;n=nextCyc(x)}return last}
+function billUpdates(){var q=[],n=0,t=today();
+S.forEach(function(s){if(!(s.monthly>0)||!s.join)return;var c=0,first=null,last=null,x={join:s.join,lastBilled:s.lastBilled},nx=nextCyc(x),g=0;
+while(nx<=t&&g++<600){if(!first)first=nx;last=nx;c++;x.lastBilled=nx;nx=nextCyc(x)}
+if(!c)return;n++;var u=sb.from('students').update({fee_pending:s.fee+c*s.monthly,fee_due:(s.fee>0&&s.due)?s.due:first,last_billed:last}).eq('id',s.id);
+q.push(s.lastBilled?u.eq('last_billed',s.lastBilled):u.is('last_billed',null))});
+return {q:q,n:n}}
+function addStudent(){sheet('Add student','<div class="card"><label class="mute" for="f1">Student name</label><input id="f1"><label class="mute" for="f2">Parent name</label><input id="f2"><label class="mute" for="f3">Parent WhatsApp number (10 digits)</label><input id="f3" type="tel" inputmode="numeric" maxlength="10"><label class="mute" for="f6">Monthly fee (₹)</label><input id="f6" type="number" inputmode="numeric"><label class="mute" for="f8">Joining date (fee is due on this day every month)</label><input id="f8" type="date" value="'+today()+'"><label class="mute" for="f9">First month’s fee</label><select id="f9"><option value="due">Due now</option><option value="paid">Already paid</option></select></div><button onclick="doAdd()">Save student</button>')}
+async function doAdd(){var n=$('f1').value.trim(),par=$('f2').value.trim(),ph=$('f3').value.replace(/\D/g,''),mf=Math.max(0,+$('f6').value||0),jd=$('f8').value,paid=$('f9').value==='paid';
+if(!n||!par||ph.length!==10){toast('Enter name, parent name and a 10-digit number');return}if(!jd){toast('Pick the joining date');return}if(!mf){toast('Enter the monthly fee');return}
+if(await w([sb.from('students').insert({centre_id:CENTRE.id,name:n,parent_name:par,parent_phone:'91'+ph,fee_pending:0,fee_due:null,monthly_fee:mf,join_date:jd,last_billed:paid?jd:null})])){closeSheet();toast('Student added')}}
+function editFee(id){var s=sById(id);if(!s)return;sheet('Fee settings · '+esc(s.n),'<div class="card"><label class="mute" for="m1">Monthly fee (₹)</label><input id="m1" type="number" inputmode="numeric" value="'+s.monthly+'"><label class="mute" for="m3">Joining date (fee is due on this day every month)</label><input id="m3" type="date" value="'+esc(s.join)+'"><label class="mute" for="m4">Billing</label><select id="m4"><option value="next">Start from the next due date</option><option value="join">Bill from the joining date</option></select></div><button onclick="doEditFee(\''+id+'\')">Save</button>')}
+async function doEditFee(id){var s=sById(id),mf=Math.max(0,+$('m1').value||0),jd=$('m3').value,row={monthly_fee:mf};
+if(jd&&(jd!==s.join||!s.lastBilled)){row.join_date=jd;row.last_billed=$('m4').value==='join'?null:latestCyc(jd)}
+if(await w([sb.from('students').update(row).eq('id',id)])){closeSheet();toast('Saved')}}
+
+/* Advance fees: each student has a next due date on his joining-date day */
+function overdue(o){var c=0,d=o.nextDue,a=o.join||o.nextDue,g=0;while(d&&d<=today()&&g++<600){c++;d=nextCyc({join:a,lastBilled:d})}return c}
+function afterToday(join){var n=join||today(),g=0;while(n<=today()&&g++<600)n=nextCyc({join:join||today(),lastBilled:n});return n}
+function build(x,att,sc,hw){var o=build0(x,att,sc,hw);o.nextDue=x.next_due||'';o.batchId=x.batch_id||'';o.join=x.join_date||'';o.cycles=overdue(o);o.paidPart=x.paid_part||0;var ok=o.monthly>0&&o.nextDue&&o.cycles>0;o.fee=ok?Math.max(0,o.cycles*o.monthly-o.paidPart):0;o.due=ok&&o.cycles>0?o.nextDue:'';return o}
+function markPaid(id){var s=sById(id);if(!s||!s.nextDue)return;
+if(!confirm('Mark '+inr(s.monthly)+' as paid for '+s.n+'?'+(s.cycles>1?' ('+s.cycles+' months are pending, this clears one month.)':'')))return;
+var nx=nextCyc({join:s.join||s.nextDue,lastBilled:s.nextDue});
+w([sb.from('payments').insert({centre_id:CENTRE.id,student_id:id,amount:s.monthly}),sb.from('students').update({next_due:nx}).eq('id',id).eq('next_due',s.nextDue)]).then(function(ok){if(ok)toast('Paid. Next due '+dfmt(nx))})}
+function demoDays(x){return x[3]===29?35:x[3]===26?33:x[3]}
+function addStudent(){sheet('Add student','<div class="card"><label class="mute" for="f1">Student name</label><input id="f1"><label class="mute" for="f2">Parent name</label><input id="f2"><label class="mute" for="f3">Parent WhatsApp number (10 digits)</label><input id="f3" type="tel" inputmode="numeric" maxlength="10"><label class="mute" for="f6">Monthly fee (₹)</label><input id="f6" type="number" inputmode="numeric"><label class="mute" for="f8">Joining date (fee is due on this day every month)</label><input id="f8" type="date" value="'+today()+'"><label class="mute" for="f9">First month’s fee</label><select id="f9"><option value="paid">Paid at joining (advance)</option><option value="due">Not paid yet (due on joining date)</option></select></div><button onclick="doAdd()">Save student</button>')}
+async function doAdd(){var n=$('f1').value.trim(),par=$('f2').value.trim(),ph=$('f3').value.replace(/\D/g,''),mf=Math.max(0,+$('f6').value||0),jd=$('f8').value,paid=$('f9').value==='paid';
+if(!n||!par||ph.length!==10){toast('Enter name, parent name and a 10-digit number');return}if(!jd){toast('Pick the joining date');return}if(!mf){toast('Enter the monthly fee');return}
+var nd=paid?nextCyc({join:jd,lastBilled:jd}):jd;
+if(await w([sb.from('students').insert({centre_id:CENTRE.id,name:n,parent_name:par,parent_phone:'91'+ph,fee_pending:0,fee_due:null,monthly_fee:mf,join_date:jd,next_due:nd})])){closeSheet();toast('Student added. Next due '+dfmt(nd))}}
+function editFee(id){var s=sById(id);if(!s)return;sheet('Fee settings · '+esc(s.n),'<div class="card"><label class="mute" for="m1">Monthly fee (₹)</label><input id="m1" type="number" inputmode="numeric" value="'+s.monthly+'"><label class="mute" for="m3">Joining date</label><input id="m3" type="date" value="'+esc(s.join)+'"><label class="mute" for="m5">Next fee due date</label><input id="m5" type="date" value="'+(s.nextDue||afterToday(s.join))+'"></div><button onclick="doEditFee(\''+id+'\')">Save</button>')}
+async function doEditFee(id){var mf=Math.max(0,+$('m1').value||0),jd=$('m3').value,nd=$('m5').value;if(!jd||!nd){toast('Pick the joining date and the next due date');return}
+if(await w([sb.from('students').update({monthly_fee:mf,join_date:jd,next_due:nd}).eq('id',id)])){closeSheet();toast('Saved')}}
+
+/* Part payments: paid_part = amount already received toward the current month */
+function partPay(id){var s=sById(id);if(!s)return;sheet('Part payment','<p class="mute" style="margin-bottom:8px">'+esc(s.n)+' owes '+inr(s.fee)+(s.paidPart>0?' (already paid '+inr(s.paidPart)+' this month)':'')+'</p><div class="card"><label class="mute" for="pp">Amount received now (₹)</label><input id="pp" type="number" inputmode="numeric" max="'+s.fee+'"></div><button onclick="doPart(\''+id+'\')">Record payment</button>')}
+async function doPart(id){var s=sById(id),a=+$('pp').value;if(!(a>0)||a>s.fee){toast('Enter an amount up to '+inr(s.fee));return}
+var pp=s.paidPart+a,nd=s.nextDue,g=0;while(s.monthly>0&&pp>=s.monthly&&g++<600){pp-=s.monthly;nd=nextCyc({join:s.join||s.nextDue,lastBilled:nd})}
+var left=s.fee-a;if(await w([sb.from('payments').insert({centre_id:CENTRE.id,student_id:id,amount:a}),sb.from('students').update({next_due:nd,paid_part:pp}).eq('id',id).eq('next_due',s.nextDue)])){closeSheet();toast(left>0?'Recorded. '+inr(left)+' still due':'Fully paid. Next due '+dfmt(nd))}}
+function markPaid(id){var s=sById(id);if(!s||!s.nextDue)return;var rest=s.monthly-s.paidPart;
+if(!confirm('Mark this month’s fee as paid for '+s.n+'? Receiving '+inr(rest)+'.'+(s.cycles>1?' ('+s.cycles+' months are pending, this clears one.)':'')))return;
+var nx=nextCyc({join:s.join||s.nextDue,lastBilled:s.nextDue}),q=[sb.from('students').update({next_due:nx,paid_part:0}).eq('id',id).eq('next_due',s.nextDue)];
+if(rest>0)q.unshift(sb.from('payments').insert({centre_id:CENTRE.id,student_id:id,amount:rest}));
+w(q).then(function(ok){if(ok)toast('Paid. Next due '+dfmt(nx))})}
+
+/* ===== Batches ===== */
+var BATCHES=[],PAY=[],HWR=[],ALLS=[];st.bf='all';
+function bName(id){var b=BATCHES.filter(function(x){return x.id===id})[0];return b?b.name:'No batch'}
+function bById(id){return BATCHES.filter(function(x){return x.id===id})[0]}
+function inB(s){return st.bf==='all'||(st.bf==='none'?!s.batchId:s.batchId===st.bf)}
+function setFilter(v){st.bf=v;S=ALLS.filter(inB);render()}
+function filterBar(){if(!BATCHES.length)return '';var h='<div class="chips"><button class="'+(st.bf==='all'?'on':'')+'" onclick="setFilter(\'all\')">All batches</button>';
+BATCHES.forEach(function(b){h+='<button class="'+(st.bf===b.id?'on':'')+'" onclick="setFilter(\''+b.id+'\')">'+esc(b.name)+'</button>'});
+if(ALLS.some(function(s){return !s.batchId}))h+='<button class="'+(st.bf==='none'?'on':'')+'" onclick="setFilter(\'none\')">No batch</button>';return h+'</div>'}
+function bStud(id){return ALLS.filter(function(s){return id==='none'?!s.batchId:s.batchId===id})}
+function bStats(id){var L=bStud(id),ids={},att=[0,0],sc=[],top=null,due=L.filter(function(s){return s.fee>0});L.forEach(function(s){ids[s.id]=1;att[0]+=s.att[0];att[1]+=s.att[1];if(s.sc.length){var v=lastSc(s);sc.push(v);if(!top||v>lastSc(top))top=s}});
+return {L:L,n:L.length,exp:L.reduce(function(a,s){return a+s.monthly},0),pend:due.reduce(function(a,s){return a+s.fee},0),dueN:due.length,col:PAY.filter(function(p){return ids[p.student_id]}).reduce(function(a,p){return a+p.amount},0),ap:att[1]?Math.round(att[0]/att[1]*100):0,avg:sc.length?Math.round(sc.reduce(function(a,b){return a+b},0)/sc.length*10)/10:0,top:top}}
+function batchSection(){var h='<h2 style="margin-top:16px">Batches</h2>',ids=BATCHES.map(function(b){return b.id});if(ALLS.some(function(s){return !s.batchId}))ids.push('none');
+if(!ids.length)h+='<div class="card"><p class="mute">No batches yet. Add one to group students and take batch-wise attendance and tests.</p></div>';
+ids.forEach(function(id){var b=bById(id),t=bStats(id);h+='<div class="card" role="button" tabindex="0" style="cursor:pointer" onclick="bDetail(\''+id+'\')"><div class="row" style="border:0;margin:0;padding:0"><div><b>'+esc(b?b.name:'No batch')+'</b><div class="mute">'+esc(b&&b.timing||'')+'</div></div><span class="chip">'+t.n+' students</span></div><div class="row"><span class="mute">Fees pending</span><b>'+inr(t.pend)+'</b></div><div class="row"><span class="mute">Collected</span><b>'+inr(t.col)+'</b></div><div class="row"><span class="mute">Attendance</span><b>'+t.ap+'%</b></div></div>'});
+return h+'<button class="ghost" style="margin-bottom:8px" onclick="editBatch()">Add batch</button>'}
+function bDetail(id){var b=bById(id),t=bStats(id),r=function(l,v){return '<div class="row"><span class="mute">'+l+'</span><b>'+v+'</b></div>'};
+var h='<div class="card">'+r('Timing',esc(b&&b.timing||'—'))+r('Students',t.n)+r('Default monthly fee',b?inr(b.monthly_fee):'—')+r('Monthly fees expected',inr(t.exp))+r('Fees pending',inr(t.pend)+' ('+t.dueN+' due)')+r('Collected so far',inr(t.col))+r('Average attendance',t.ap+'%')+r('Average last test',t.avg+'%')+r('Top scorer',t.top?esc(t.top.n)+' ('+lastSc(t.top)+'%)':'—')+'</div><div class="card"><h3>Students</h3>';
+if(!t.L.length)h+='<p class="mute">No students in this batch yet.</p>';
+t.L.forEach(function(s){h+='<div class="row"><div><b>'+esc(s.n)+'</b> <span class="chip'+(s.fee>0?' red':' green')+'">'+(s.fee>0?'Due':'Clear')+'</span><div class="mute">Attendance '+(s.att[1]?Math.round(s.att[0]/s.att[1]*100)+'%':'—')+' · Last test '+(s.sp&&s.sp.length?lastSc(s)+'%':'—')+'</div></div><b>'+(s.fee>0?inr(s.fee):'')+'</b></div>'});
+h+='</div><button style="margin-bottom:8px" onclick="closeSheet();setFilter(\''+id+'\');go(\'fees\')">Open fees</button><button class="ghost" style="margin-bottom:8px" onclick="closeSheet();setFilter(\''+id+'\');go(\'att\')">Take attendance</button>'+(b?'<button class="ghost" style="margin-bottom:8px" onclick="editBatch(\''+id+'\')">Edit batch</button>':'');
+sheet(esc(b?b.name:'No batch'),h)}
+function editBatch(id){var b=id?bById(id):null;sheet(b?'Edit batch':'Add batch','<div class="card"><label class="mute" for="b1">Batch name</label><input id="b1" value="'+esc(b?b.name:'')+'" placeholder="Class 9 Maths"><label class="mute" for="b2">Timing</label><input id="b2" value="'+esc(b&&b.timing||'')+'" placeholder="Mon–Fri 5:00 PM"><label class="mute" for="b3">Default monthly fee (₹)</label><input id="b3" type="number" inputmode="numeric" value="'+(b?b.monthly_fee:'')+'"></div><button onclick="doBatch(\''+(b?b.id:'')+'\')">Save batch</button>'+(b?'<button class="ghost" style="margin-top:8px" onclick="delBatch(\''+b.id+'\')">Delete batch</button>':''))}
+async function doBatch(id){var n=$('b1').value.trim();if(!n){toast('Enter the batch name');return}var row={name:n,timing:$('b2').value.trim()||null,monthly_fee:Math.max(0,+$('b3').value||0)};
+if(await w([id?sb.from('batches').update(row).eq('id',id):sb.from('batches').insert(Object.assign({centre_id:CENTRE.id},row))])){closeSheet();toast('Batch saved')}}
+async function delBatch(id){if(!confirm('Delete this batch? Its students stay but will show as No batch.'))return;if(await w([sb.from('batches').delete().eq('id',id)])){closeSheet();toast('Batch deleted')}}
+function bOpts(sel){return '<option value="">No batch</option>'+BATCHES.map(function(b){return '<option value="'+b.id+'"'+(b.id===sel?' selected':'')+'>'+esc(b.name)+'</option>'}).join('')}
+function pickBatch(v){var b=bById(v);if(b&&b.monthly_fee&&$('f6'))$('f6').value=b.monthly_fee}
+function addStudent(){var sel=(st.bf!=='all'&&st.bf!=='none')?st.bf:'',b=bById(sel);sheet('Add student','<div class="card"><label class="mute" for="f1">Student name</label><input id="f1"><label class="mute" for="f2">Parent name</label><input id="f2"><label class="mute" for="f3">Parent WhatsApp number (10 digits)</label><input id="f3" type="tel" inputmode="numeric" maxlength="10"><label class="mute" for="f10">Batch</label><select id="f10" onchange="pickBatch(this.value)">'+bOpts(sel)+'</select><label class="mute" for="f6">Monthly fee (₹)</label><input id="f6" type="number" inputmode="numeric" value="'+(b&&b.monthly_fee?b.monthly_fee:'')+'"><label class="mute" for="f8">Joining date (fee is due on this day every month)</label><input id="f8" type="date" value="'+today()+'"><label class="mute" for="f9">First month’s fee</label><select id="f9"><option value="paid">Paid at joining (advance)</option><option value="due">Not paid yet (due on joining date)</option></select></div><button onclick="doAdd()">Save student</button>')}
+async function doAdd(){var n=$('f1').value.trim(),par=$('f2').value.trim(),ph=$('f3').value.replace(/\D/g,''),mf=Math.max(0,+$('f6').value||0),jd=$('f8').value,paid=$('f9').value==='paid';
+if(!n||!par||ph.length!==10){toast('Enter name, parent name and a 10-digit number');return}if(!jd){toast('Pick the joining date');return}if(!mf){toast('Enter the monthly fee');return}
+var nd=paid?nextCyc({join:jd,lastBilled:jd}):jd;
+if(await w([sb.from('students').insert({centre_id:CENTRE.id,name:n,parent_name:par,parent_phone:'91'+ph,fee_pending:0,fee_due:null,monthly_fee:mf,join_date:jd,next_due:nd,batch_id:$('f10').value||null})])){closeSheet();toast('Student added. Next due '+dfmt(nd))}}
+function editFee(id){var s=sById(id);if(!s)return;sheet('Edit · '+esc(s.n),'<div class="card"><label class="mute" for="m6">Batch</label><select id="m6">'+bOpts(s.batchId)+'</select><label class="mute" for="m1">Monthly fee (₹)</label><input id="m1" type="number" inputmode="numeric" value="'+s.monthly+'"><label class="mute" for="m3">Joining date</label><input id="m3" type="date" value="'+esc(s.join)+'"><label class="mute" for="m5">Next fee due date</label><input id="m5" type="date" value="'+(s.nextDue||afterToday(s.join))+'"></div><button onclick="doEditFee(\''+id+'\')">Save</button>')}
+async function doEditFee(id){var mf=Math.max(0,+$('m1').value||0),jd=$('m3').value,nd=$('m5').value;if(!jd||!nd){toast('Pick the joining date and the next due date');return}
+if(await w([sb.from('students').update({monthly_fee:mf,join_date:jd,next_due:nd,batch_id:$('m6').value||null}).eq('id',id)])){closeSheet();toast('Saved')}}
+function postHW(){sheet('Post homework','<div class="card"><label class="mute" for="hb">For</label><select id="hb"><option value="">All batches</option>'+BATCHES.map(function(b){return '<option value="'+b.id+'"'+(st.bf===b.id?' selected':'')+'>'+esc(b.name)+'</option>'}).join('')+'</select><label class="mute" for="hw">Homework</label><textarea id="hw" rows="3" placeholder="e.g. Algebra ex. 4.2, Q1–10 (due Friday)"></textarea></div><button onclick="doHW()">Post to parents</button>')}
+async function doHW(){var t=$('hw').value.trim();if(!t){toast('Write the homework first');return}if(await w([sb.from('homework').insert({centre_id:CENTRE.id,text:t,batch_id:$('hb').value||null})])){closeSheet();toast('Homework posted')}}
+function owner(){var keep=S,h;S=ALLS;try{h=ownerOld()}finally{S=keep}return h.replace('<h2 style="margin-top:16px">Students</h2>',batchSection()+'<h2 style="margin-top:16px">Students</h2>')}
+
+/* Edit / delete student */
+function editFee(id){var s=sById(id);if(!s)return;sheet('Edit · '+esc(s.n),'<div class="card"><label class="mute" for="m7">Student name</label><input id="m7" value="'+esc(s.n)+'"><label class="mute" for="m8">Parent name</label><input id="m8" value="'+esc(s.par)+'"><label class="mute" for="m9">Parent WhatsApp number (10 digits)</label><input id="m9" type="tel" inputmode="numeric" maxlength="10" value="'+esc(String(s.ph).slice(-10))+'"><label class="mute" for="m6">Batch</label><select id="m6">'+bOpts(s.batchId)+'</select><label class="mute" for="m1">Monthly fee (₹)</label><input id="m1" type="number" inputmode="numeric" value="'+s.monthly+'"><label class="mute" for="m3">Joining date</label><input id="m3" type="date" value="'+esc(s.join)+'"><label class="mute" for="m5">Next fee due date</label><input id="m5" type="date" value="'+(s.nextDue||afterToday(s.join))+'"></div><button onclick="doEditFee(\''+id+'\')">Save</button><button class="ghost" style="margin-top:8px" onclick="archiveStudent(\''+id+'\')">Archive student (inactive)</button><button class="ghost" style="margin-top:8px;color:var(--red)" onclick="delStudent(\''+id+'\')">Delete student</button>')}
+async function doEditFee(id){var n=$('m7').value.trim(),par=$('m8').value.trim(),ph=$('m9').value.replace(/\D/g,''),mf=Math.max(0,+$('m1').value||0),jd=$('m3').value,nd=$('m5').value;
+if(!n||!par||ph.length!==10){toast('Enter name, parent name and a 10-digit number');return}if(!jd||!nd){toast('Pick the joining date and the next due date');return}
+if(await w([sb.from('students').update({name:n,parent_name:par,parent_phone:'91'+ph,monthly_fee:mf,join_date:jd,next_due:nd,batch_id:$('m6').value||null}).eq('id',id)])){closeSheet();toast('Saved')}}
+async function delStudent(id){var s=sById(id);if(!s)return;if(!confirm('Delete '+s.n+'? Their attendance, test scores and payment history will also be deleted, and the Collected total will go down. This cannot be undone.'))return;
+if(await w([sb.from('students').delete().eq('id',id)])){closeSheet();toast('Student deleted')}}
+
+/* ===== Phase A ===== */
+var ATTR=[],SCR=[];st.ad='';st.attFor='';st.admit=null;
+async function allRows(t,cols,ord){var out=[],f=0;for(;;){var r=await sb.from(t).select(cols).order(ord,{ascending:true}).order('id').range(f,f+999);if(r.error)return {data:null,error:r.error};out=out.concat(r.data);if(r.data.length<1000)break;f+=1000}return {data:out,error:null}}
+function kfmt(v){return v>=1000?(Math.round(v/100)/10)+'k':String(v)}
+function sName(id){var s=sById(id);return s?s.n:'—'}
+
+/* 2. Forgot password */
+async function sendReset(){var e=$('le').value.trim();if(!e){toast('Type your email above first');return}var r=await sb.auth.resetPasswordForEmail(e,{redirectTo:location.href.split('#')[0].split('?')[0]});toast(r.error?r.error.message:'Check your email for the reset link')}
+function recoveryUI(){return '<div class="card"><h3>Set a new password</h3><label class="mute" for="np">New password (6+ characters)</label><input id="np" type="password"><button onclick="setNewPw()">Save password</button></div>'}
+async function setNewPw(){var p=$('np').value;if(p.length<6){toast('Use at least 6 characters');return}var r=await sb.auth.updateUser({password:p});if(r.error){toast(r.error.message);return}st.recovery=0;toast('Password changed');render()}
+
+/* 3 + 4. Attendance for any date, and history */
+function attendance(){var g=gate();if(g)return g;if(!S.length)return empty();var d=st.ad||today();
+if(st.attFor!==d){st.att={};ATTR.filter(function(r){return r.day===d}).forEach(function(r){st.att[r.student_id]=r.present?'P':'A'});st.attFor=d}
+var h='<h2>'+BATCH+'</h2><div class="card"><label class="mute" for="ad">Date</label><input id="ad" type="date" max="'+today()+'" value="'+d+'" onchange="setAttDate(this.value)"></div><div class="card">';
+S.forEach(function(s){var v=st.att[s.id];h+='<div class="row"><b>'+esc(s.n)+'</b><div class="pa"><button class="p'+(v==='P'?' on':'')+'" aria-label="Present" onclick="mark(\''+s.id+'\',\'P\')">P</button><button class="a'+(v==='A'?' on':'')+'" aria-label="Absent" onclick="mark(\''+s.id+'\',\'A\')">A</button></div></div>'});
+var m=S.filter(function(s){return st.att[s.id]}).length;
+return h+'</div><button onclick="saveAtt()" style="margin-bottom:8px">Save attendance ('+m+'/'+S.length+' marked)</button><button class="ghost" onclick="attHistory()" style="margin-bottom:8px">Attendance history</button><button class="ghost" onclick="hwCheck()">Homework check</button>'}
+function setAttDate(d){if(!d||d>today()){toast('Pick a date up to today');return}st.ad=d;render()}
+async function saveAtt(){var un=S.filter(function(s){return !st.att[s.id]});if(un.length){toast('Mark all students first: '+un.length+' left');return}var d=st.ad||today();
+var ab=S.filter(function(s){return st.att[s.id]==='A'}),rows=S.map(function(s){return {centre_id:CENTRE.id,student_id:s.id,day:d,present:st.att[s.id]==='P'}});
+if(!(await w([sb.from('attendance').upsert(rows,{onConflict:'student_id,day'})])))return;
+if(d!==today()){toast('Saved for '+dfmt(d));return}
+if(!ab.length){toast('Saved. Everyone was present');return}
+var h='<p class="mute" style="margin-bottom:8px">Attendance saved. Send an absent alert to each parent.</p><div class="card">';
+ab.forEach(function(s){h+='<div class="row"><div><b>'+esc(s.par)+'</b><div class="mute">'+esc(s.n)+' was absent</div></div><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(s.ph,'Dear '+s.par+', '+s.n+' was absent from today’s class at '+cname()+' ('+dfmt(d)+'). Please let us know if all is well.')+'" onclick="sentLink(this)">Send</a></div>'});
+sheet('Absent alerts',h+'</div>')}
+function attHistory(mode,sid){mode=mode||'date';var ids={};S.forEach(function(s){ids[s.id]=1});var R=ATTR.filter(function(r){return ids[r.student_id]});
+var h='<div class="chips"><button class="'+(mode==='date'?'on':'')+'" onclick="attHistory(\'date\')">By date</button><button class="'+(mode==='student'?'on':'')+'" onclick="attHistory(\'student\')">By student</button></div>';
+if(mode==='date'){var by={};R.forEach(function(r){var o=by[r.day]=by[r.day]||{p:0,a:0,ab:[]};if(r.present)o.p++;else{o.a++;o.ab.push(sName(r.student_id).split(' ')[0])}});
+var days=Object.keys(by).sort().reverse().slice(0,60);if(!days.length)h+='<p class="mute">No attendance saved yet.</p>';
+h+='<div class="card">';days.forEach(function(d){var o=by[d];h+='<div class="row"><div><b>'+dfmt(d)+'</b><div class="mute">'+o.p+' present · '+o.a+' absent'+(o.a&&o.a<=4?': '+esc(o.ab.join(', ')):'')+'</div></div><button class="small ghost" onclick="closeSheet();setAttDate(\''+d+'\')">Open</button></div>'});h+='</div>'}
+else{sid=sid||(S[0]&&S[0].id);h+='<select aria-label="Student" onchange="attHistory(\'student\',this.value)">'+S.map(function(s){return '<option value="'+s.id+'"'+(s.id===sid?' selected':'')+'>'+esc(s.n)+'</option>'}).join('')+'</select>';
+var L=R.filter(function(r){return r.student_id===sid}).sort(function(a,b){return a.day<b.day?1:-1}).slice(0,60),p=L.filter(function(r){return r.present}).length;
+h+='<p class="mute" style="margin-bottom:8px">'+p+' of '+L.length+' recent days present'+(L.length?' ('+Math.round(p/L.length*100)+'%)':'')+'</p><div class="card">';
+L.forEach(function(r){h+='<div class="row"><span>'+dfmt(r.day)+'</span><span class="chip'+(r.present?' green':' red')+'">'+(r.present?'Present':'Absent')+'</span></div>'});if(!L.length)h+='<p class="mute">No records yet.</p>';h+='</div>'}
+sheet('Attendance history',h)}
+
+
+/* ===== Archive (Active / Inactive) ===== */
+var ARCH=[];
+var buildPrev=build;build=function(x,att,sc,hw){var o=buildPrev(x,att,sc,hw);o.active=x.active!==false;if(!o.active){o.fee=0;o.due=''}return o};
+function archiveStudent(id){var s=sById(id);if(!s)return;if(!confirm('Archive '+s.n+'? They will be hidden from fees, attendance, tests and announcements. All their records are kept and you can restore them anytime.'))return;
+w([sb.from('students').update({active:false}).eq('id',id)]).then(function(ok){if(ok){closeSheet();toast('Student archived')}})}
+function restoreSheet(id){var s=sById(id);if(!s)return;sheet('Restore · '+esc(s.n),'<p class="mute" style="margin-bottom:8px">No fees are charged for the months they were archived. Choose their next fee due date.</p><div class="card"><label class="mute" for="rd">Next fee due date</label><input id="rd" type="date" value="'+afterToday(s.join)+'"></div><button onclick="doRestore(\''+id+'\')">Restore student</button>')}
+async function doRestore(id){var d=$('rd').value;if(!d){toast('Pick the next due date');return}if(await w([sb.from('students').update({active:true,next_due:d,paid_part:0}).eq('id',id)])){closeSheet();toast('Student restored')}}
+function archSection(){if(!ARCH.length)return '';var h='<h2 style="margin-top:16px">Archived students ('+ARCH.length+')</h2><div class="card">';
+ARCH.forEach(function(s){h+='<div class="row"><div><b>'+esc(s.n)+'</b> <span class="chip">Inactive</span><div class="mute">'+esc(s.par)+' · '+esc(bName(s.batchId))+'</div></div><button class="small ghost" onclick="restoreSheet(\''+s.id+'\')">Restore</button></div>'});return h+'</div>'}
+
+/* ===== Batch announcement ===== */
+function annTpl(){var t=$('at').value,b=$('ab').value,bl=b?bName(b):'all batches',d=$('ad2').value,
+dl=d?new Date(d).toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'}):'[date]',
+T={holiday:'There will be no class on '+dl+' for '+bl+'. Regular classes will resume after that.',timing:'The timing of '+bl+' has changed to [new time] from '+dl+'. Please note.',test:'A test for '+bl+' is scheduled on '+dl+'. Please make sure your child is prepared.',custom:''};
+$('am').value=T[t]||''}
+function announceSheet(){if(!ALLS.length){toast('Add students first');return}
+sheet('Announcement','<div class="card"><label class="mute" for="ab">Send to</label><select id="ab" onchange="annTpl()"><option value="">All batches</option>'+BATCHES.map(function(b){return '<option value="'+b.id+'"'+(st.bf===b.id?' selected':'')+'>'+esc(b.name)+'</option>'}).join('')+'</select><label class="mute" for="at">Message type</label><select id="at" onchange="annTpl()"><option value="holiday">Holiday</option><option value="timing">Timing change</option><option value="test">Test notice</option><option value="custom">Other message</option></select><label class="mute" for="ad2">Date</label><input id="ad2" type="date" value="'+iso(-1)+'" onchange="annTpl()"><label class="mute" for="am">Message (you can edit it)</label><textarea id="am" rows="4"></textarea></div><button onclick="annSend()">Prepare messages</button>');annTpl()}
+function annSend(){var body=$('am').value.trim(),b=$('ab').value;if(!body){toast('Write the message first');return}
+var L=ALLS.filter(function(s){return !b||s.batchId===b}),by={},order=[];if(!L.length){toast('No students in this batch');return}
+L.forEach(function(s){if(!by[s.ph]){by[s.ph]={par:s.par,kids:[]};order.push(s.ph)}by[s.ph].kids.push(s.n.split(' ')[0])});
+var h='<p class="mute" style="margin-bottom:8px">'+order.length+' parents. WhatsApp opens one chat at a time. Tap Send for each parent.</p><div class="card">';
+order.forEach(function(ph){var g=by[ph];h+='<div class="row"><div><b>'+esc(g.par)+'</b><div class="mute">'+esc(g.kids.join(', '))+'</div></div><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(ph,'Dear '+g.par+',\n'+body+'\n\n— '+cname())+'" onclick="sentLink(this)">Send</a></div>'});
+sheet('Send announcement',h+'</div>')}
+
+function owner(){var keep=S,h;S=ALLS;try{h=ownerOld()}finally{S=keep}
+h=h.replace('<h2 style="margin-top:16px">Referral enquiries</h2>','<button class="ghost" style="margin-top:12px" onclick="announceSheet()">Send announcement</button><h2 style="margin-top:16px">Referral enquiries</h2>');
+return h.replace('<h2 style="margin-top:16px">Students</h2>',batchSection()+'<h2 style="margin-top:16px">Students</h2>')+archSection()}
+
+/* ===== Tests: out-of-marks + edit tests; Homework check (done / not done) ===== */
+var SCR=[],HWS=[],TG=[];st.hwm={};
+var buildPrev2=build;build=function(x,att,sc,hw){var o=buildPrev2(x,att,sc,hw);var rows=sc.filter(function(r){return r.student_id===x.id});o.srows=rows;o.sp=rows.map(function(r){return Math.round(r.score/(r.max_score||50)*100)});return o};
+function lastSc(s){return (s.sp&&s.sp.length)?s.sp[s.sp.length-1]:0}
+function tests(){var g=gate();if(g)return g;if(!S.length)return empty();var s=me(),rows=s.srows||[],sp=s.sp||[],last=rows[rows.length-1],d=sp.length>1?sp[sp.length-1]-sp[sp.length-2]:0;
+var h='<div class="chips">';S.forEach(function(x){h+='<button class="'+(s.id===x.id?'on':'')+'" onclick="st.sel=\''+x.id+'\';render()">'+esc(x.n.split(' ')[0])+'</button>'});h+='</div>';
+if(last)h+='<div class="card hero"><small>'+esc(s.n)+' · '+esc(last.subject||'Latest test')+' · '+dfmt(last.test_date)+'</small><div class="row" style="border:0;margin:0;padding:0"><div class="num">'+last.score+'/'+(last.max_score||50)+'</div><div style="text-align:right"><div class="num">#'+rank(s)+'</div><small>of '+S.length+' in class</small></div></div><small>'+(sp.length>1?(d>=0?'Up ':'Down ')+Math.abs(d)+' percentage points from the previous test':'First test recorded')+'</small></div>';
+else h+='<div class="card hero"><small>'+esc(s.n)+'</small><div class="num">No tests yet</div><small>Enter scores to see rank and chart</small></div>';
+h+='<div class="card"><h3>Last 6 tests (%)</h3><div class="bars">';
+sp.slice(-6).forEach(function(v,i,a){var r=rows[rows.length-a.length+i];h+='<div class="c'+(i===a.length-1?' last':'')+'"><b>'+v+'</b><i style="height:'+Math.max(2,v)+'%"></i>'+esc(r&&r.subject?r.subject.slice(0,4):'T'+(rows.length-a.length+i+1))+'</div>'});
+if(!sp.length)h+='<p class="mute">No scores yet.</p>';
+h+='</div></div>';
+if(rows.length){h+='<div class="card"><h3>Recent tests</h3>';rows.slice(-4).reverse().forEach(function(r){h+='<div class="row"><span>'+esc(r.subject||'Test')+' <span class="mute">'+dfmt(r.test_date)+'</span></span><b>'+r.score+'/'+(r.max_score||50)+'</b></div>'});h+='</div>'}
+var msg=cname()+' · Test report\n'+s.n+(last?'\n'+(last.subject||'Test')+': '+last.score+'/'+(last.max_score||50)+' ('+lastSc(s)+'%)\nRank: '+rank(s)+' of '+S.length+'\nLast tests: '+sp.slice(-6).join('%, ')+'%':'\nNo tests yet');
+return h+'<a class="btn wa" target="_blank" rel="noopener" style="margin-bottom:8px" href="'+wa(s.ph,msg)+'">Share report on WhatsApp</a><button style="margin-bottom:8px" onclick="addScores()">Enter test scores</button><button class="ghost" onclick="editTests()">Edit tests (marks, date, scores)</button>'}
+function addScores(){var h='<div class="card"><label class="mute" for="ts">Subject</label><input id="ts" placeholder="Maths"><label class="mute" for="tm">Total marks (out of)</label><input id="tm" type="number" inputmode="numeric" value="50"><label class="mute" for="td">Test date</label><input id="td" type="date" max="'+today()+'" value="'+today()+'"></div><p class="mute" style="margin-bottom:8px">Marks scored. Leave blank to skip a student.</p><div class="card">';
+S.forEach(function(s){h+='<div class="row"><label for="sc_'+s.id+'">'+esc(s.n)+'</label><input id="sc_'+s.id+'" type="number" inputmode="numeric" min="0" style="width:80px"></div>'});
+sheet('New test scores',h+'</div><button style="margin-top:10px" onclick="saveScores()">Save scores</button>')}
+async function saveScores(){var tot=+$('tm').value,subj=$('ts').value.trim()||null,dt=$('td').value||today(),rows=[];
+if(!(tot>=1)){toast('Enter the total marks');return}
+for(var k=0;k<S.length;k++){var s=S[k],v=$('sc_'+s.id).value;if(v!==''){if(+v>tot){toast('Score for '+s.n+' is higher than the total marks');return}rows.push({centre_id:CENTRE.id,student_id:s.id,score:Math.max(0,+v),max_score:tot,subject:subj,test_date:dt})}}
+if(!rows.length){toast('Enter at least one score');return}if(await w([sb.from('test_scores').insert(rows)])){closeSheet();toast('Scores saved')}}
+function testGroups(){var ids={};S.forEach(function(s){ids[s.id]=1});var g={},order=[];
+SCR.filter(function(r){return ids[r.student_id]}).forEach(function(r){var k=r.test_date+'|'+(r.subject||'')+'|'+(r.max_score||50);if(!g[k]){g[k]={date:r.test_date,subject:r.subject||'',max:r.max_score||50,rows:[]};order.push(k)}g[k].rows.push(r)});
+return order.map(function(k){return g[k]}).sort(function(a,b){return a.date<b.date?1:-1})}
+function editTests(){TG=testGroups().slice(0,30);var h='<p class="mute" style="margin-bottom:8px">Tap a test to change its subject, total marks, date or scores.</p><div class="card">';
+if(!TG.length)h+='<p class="mute">No tests yet.</p>';
+TG.forEach(function(g,i){h+='<div class="row" role="button" tabindex="0" style="cursor:pointer" onclick="editTest('+i+')"><div><b>'+esc(g.subject||'Test')+'</b><div class="mute">'+dfmt(g.date)+' · '+g.rows.length+' students</div></div><span class="chip">out of '+g.max+'</span></div>'});
+sheet('Edit tests',h+'</div>')}
+function editTest(i){var g=TG[i];if(!g)return;var by={};g.rows.forEach(function(r){by[r.student_id]=r});
+var h='<div class="card"><label class="mute" for="et1">Subject</label><input id="et1" value="'+esc(g.subject)+'"><label class="mute" for="et2">Total marks (out of)</label><input id="et2" type="number" inputmode="numeric" value="'+g.max+'"><label class="mute" for="et3">Test date</label><input id="et3" type="date" max="'+today()+'" value="'+esc(g.date)+'"></div><p class="mute" style="margin-bottom:8px">Scores. Change a box to correct it, or fill a blank box to add a student.</p><div class="card">';
+S.forEach(function(s){var r=by[s.id];h+='<div class="row"><label for="es_'+s.id+'">'+esc(s.n)+'</label><input id="es_'+s.id+'" type="number" inputmode="numeric" min="0" style="width:80px" value="'+(r?r.score:'')+'"></div>'});
+sheet('Edit test',h+'</div><button style="margin-top:10px;margin-bottom:8px" onclick="saveTest('+i+')">Save changes</button><button class="ghost" style="color:var(--red)" onclick="delTest('+i+')">Delete this test</button>')}
+async function saveTest(i){var g=TG[i];if(!g)return;var tot=+$('et2').value,subj=$('et1').value.trim()||null,dt=$('et3').value,q=[],by={};
+if(!(tot>=1)||!dt){toast('Enter the total marks and the date');return}g.rows.forEach(function(r){by[r.student_id]=r});
+for(var k=0;k<S.length;k++){var s=S[k],v=$('es_'+s.id).value,r=by[s.id];
+if(r){var sc=v===''?r.score:+v;if(sc>tot){toast('Score for '+s.n+' is higher than the total marks');return}q.push(sb.from('test_scores').update({score:Math.max(0,sc),max_score:tot,subject:subj,test_date:dt}).eq('id',r.id))}
+else if(v!==''){if(+v>tot){toast('Score for '+s.n+' is higher than the total marks');return}q.push(sb.from('test_scores').insert({centre_id:CENTRE.id,student_id:s.id,score:Math.max(0,+v),max_score:tot,subject:subj,test_date:dt}))}}
+if(await w(q)){closeSheet();toast('Test updated')}}
+async function delTest(i){var g=TG[i];if(!g||!confirm('Delete this test and all its scores? This cannot be undone.'))return;
+if(await w([sb.from('test_scores').delete().in('id',g.rows.map(function(r){return r.id}))])){closeSheet();toast('Test deleted')}}
+function bStats(id){var L=bStud(id),ids={},att=[0,0],sc=[],top=null,due=L.filter(function(s){return s.fee>0});L.forEach(function(s){ids[s.id]=1;att[0]+=s.att[0];att[1]+=s.att[1];if(s.sp&&s.sp.length){var v=lastSc(s);sc.push(v);if(!top||v>lastSc(top))top=s}});
+return {L:L,n:L.length,exp:L.reduce(function(a,s){return a+s.monthly},0),pend:due.reduce(function(a,s){return a+s.fee},0),dueN:due.length,col:PAY.filter(function(p){return ids[p.student_id]}).reduce(function(a,p){return a+p.amount},0),ap:att[1]?Math.round(att[0]/att[1]*100):0,avg:sc.length?Math.round(sc.reduce(function(a,b){return a+b},0)/sc.length):0,top:top}}
+
+function hwCheck(){var L=HWR.filter(function(x){return x.id}).slice(0,15);if(!L.length){toast('Post homework first (Owner tab)');return}
+var h='<p class="mute" style="margin-bottom:8px">Pick a homework to mark who did it.</p><div class="card">';
+L.forEach(function(x){h+='<div class="row"><div><b>'+esc(x.text.length>60?x.text.slice(0,60)+'…':x.text)+'</b><div class="mute">'+esc(x.batch_id?bName(x.batch_id):'All batches')+' · '+dfmt(String(x.created_at).slice(0,10))+'</div></div><button class="small ghost" onclick="hwMark(\''+x.id+'\',1)">Check</button></div>'});
+sheet('Homework check',h+'</div>')}
+function hwMark(id,fresh){var hw=HWR.filter(function(x){return x.id===id})[0];if(!hw)return;
+var L=ALLS.filter(function(s){return !hw.batch_id||s.batchId===hw.batch_id});
+if(fresh){st.hwm={};HWS.filter(function(r){return r.homework_id===id}).forEach(function(r){st.hwm[r.student_id]=r.done?'Y':'N'})}
+var y=0,n=0;L.forEach(function(s){if(st.hwm[s.id]==='Y')y++;else if(st.hwm[s.id]==='N')n++});
+var h='<p class="mute" style="margin-bottom:4px">'+esc(hw.text)+'</p><p class="mute" style="margin-bottom:8px">✓ '+y+' done · ✗ '+n+' not done · '+(L.length-y-n)+' not marked</p><div class="card">';
+L.forEach(function(s){var v=st.hwm[s.id];h+='<div class="row"><b>'+esc(s.n)+'</b><div class="pa"><button class="p'+(v==='Y'?' on':'')+'" aria-label="Done" onclick="hwSet(\''+id+'\',\''+s.id+'\',\'Y\')">✓</button><button class="a'+(v==='N'?' on':'')+'" aria-label="Not done" onclick="hwSet(\''+id+'\',\''+s.id+'\',\'N\')">✗</button></div></div>'});
+if(!L.length)h+='<p class="mute">No students in this batch.</p>';
+var top=$('sheet').scrollTop;sheet('Homework check',h+'</div><button style="margin-top:10px" onclick="hwSave(\''+id+'\')">Save</button>');$('sheet').scrollTop=fresh?0:top}
+function hwSet(id,sid,v){st.hwm[sid]=v;hwMark(id)}
+async function hwSave(id){var hw=HWR.filter(function(x){return x.id===id})[0],L=ALLS.filter(function(s){return !hw.batch_id||s.batchId===hw.batch_id}),rows=[],nd=[];
+L.forEach(function(s){var v=st.hwm[s.id];if(v){rows.push({centre_id:CENTRE.id,homework_id:id,student_id:s.id,done:v==='Y'});if(v==='N')nd.push(s)}});
+if(!rows.length){toast('Mark at least one student');return}
+if(!(await w([sb.from('homework_status').upsert(rows,{onConflict:'homework_id,student_id'})])))return;
+if(!nd.length){closeSheet();toast('Homework check saved');return}
+var h='<p class="mute" style="margin-bottom:8px">Saved. You can tell the parents of children who did not do it.</p><div class="card">';
+nd.forEach(function(s){h+='<div class="row"><div><b>'+esc(s.par)+'</b><div class="mute">'+esc(s.n)+' · not done</div></div><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(s.ph,'Dear '+s.par+', '+s.n+' has not completed the homework: '+hw.text+'. Please help them complete it. — '+cname())+'" onclick="sentLink(this)">Send</a></div>'});
+sheet('Homework not done',h+'</div>')}
+function owner(){var keep=S,h;S=ALLS;try{h=ownerOld()}finally{S=keep}
+h=h.replace('<h2 style="margin-top:16px">Referral enquiries</h2>','<button class="ghost" style="margin-top:12px" onclick="announceSheet()">Send announcement</button><h2 style="margin-top:16px">Referral enquiries</h2>');
+h=h.replace('onclick="postHW()">Post homework to all</button>','onclick="postHW()">Post homework</button><button class="ghost" style="margin-bottom:8px" onclick="hwCheck()">Homework check (done / not done)</button>');
+return h.replace('<h2 style="margin-top:16px">Students</h2>',batchSection()+'<h2 style="margin-top:16px">Students</h2>')+archSection()+installCard()}
+
+/* ===== PWA: install prompt, offline notice, service worker ===== */
+var DEFERRED=null;
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();DEFERRED=e;render()});
+window.addEventListener('appinstalled',function(){DEFERRED=null;toast('App installed');render()});
+function isStandalone(){return (window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true}
+function installCard(){if(isStandalone())return '';
+if(DEFERRED)return '<div class="card"><h3>Install ClassOrbitX</h3><p class="mute" style="margin:4px 0 10px">Add it to your home screen to open it like an app.</p><button onclick="doInstall()">Install app</button></div>';
+if(/iphone|ipad|ipod/i.test(navigator.userAgent))return '<div class="card"><h3>Install on iPhone</h3><p class="mute" style="margin-top:4px">In Safari tap Share, then Add to Home Screen.</p></div>';return ''}
+function doInstall(){if(!DEFERRED)return;DEFERRED.prompt();DEFERRED.userChoice.then(function(){DEFERRED=null;render()})}
+window.addEventListener('offline',function(){toast('You are offline. Changes cannot be saved.')});
+window.addEventListener('online',function(){toast('Back online');if(USER)loadAll()});
+if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})});
+
+/* ===== Monthly report (Excel / PDF) and data export ===== */
+function allStud(){return ALLS.concat(ARCH)}
+function bnOf(id){var s=allStud().filter(function(x){return x.id===id})[0];return s?bName(s.batchId):''}
+function monthPay(m){return PAY.filter(function(p){return String(p.paid_on).slice(0,7)===m})}
+function monthLabel(m){return new Date(m+'-01').toLocaleDateString('en-IN',{month:'long',year:'numeric'})}
+function reportData(m){var P=monthPay(m),byS={},byB={},tot=0;
+P.forEach(function(p){tot+=p.amount;byS[p.student_id]=(byS[p.student_id]||0)+p.amount;var s=allStud().filter(function(x){return x.id===p.student_id})[0],b=s?(s.batchId||''):'';byB[b]=(byB[b]||0)+p.amount});
+var due=ALLS.filter(function(s){return s.fee>0}).sort(function(a,b){return late(b)-late(a)});
+return {m:m,P:P,byS:byS,byB:byB,tot:tot,due:due,pend:due.reduce(function(a,s){return a+s.fee},0)}}
+function reportTables(D){var keys=BATCHES.map(function(b){return b.id}).concat(['']);
+var summary=[['Centre',cname()],['Month',monthLabel(D.m)],['Collected in this month',D.tot],['Payments received',D.P.length],['Pending right now',D.pend],['Students with fees due',D.due.length]];
+var batch=[['Batch','Students','Collected in month','Pending now']];
+keys.forEach(function(k){var L=ALLS.filter(function(s){return (s.batchId||'')===k}),col=D.byB[k]||0,pend=L.reduce(function(a,s){return a+s.fee},0);if(!k&&!col&&!pend&&!L.length)return;batch.push([k?bName(k):'No batch',L.length,col,pend])});
+var paid=[['Student','Batch','Amount paid']];Object.keys(D.byS).sort(function(a,b){return D.byS[b]-D.byS[a]}).forEach(function(id){paid.push([sName(id),bnOf(id),D.byS[id]])});
+var due=[['Student','Batch','Amount due','Days late']];D.due.forEach(function(s){due.push([s.n,bName(s.batchId),s.fee,late(s)])});
+return {summary:summary,batch:batch,paid:paid,due:due}}
+function reportSheet(m){m=m||today().slice(0,7);var D=reportData(m),r=function(l,v){return '<div class="row"><span class="mute">'+l+'</span><b>'+v+'</b></div>'};
+var h='<div class="card"><label class="mute" for="rm">Month</label><input id="rm" type="month" value="'+m+'" max="'+today().slice(0,7)+'" onchange="reportSheet(this.value)"></div><div class="card">'+r('Collected in this month',inr(D.tot))+r('Payments received',D.P.length)+r('Pending right now',inr(D.pend))+r('Students with fees due',D.due.length)+'</div>';
+var T=reportTables(D);h+='<div class="card"><h3>By batch</h3>';
+T.batch.slice(1).forEach(function(x){h+='<div class="row"><span>'+esc(x[0])+' <span class="mute">('+x[1]+')</span></span><span class="mute">'+inr(x[2])+' in · '+inr(x[3])+' due</span></div>'});
+if(T.batch.length<2)h+='<p class="mute">No data yet.</p>';h+='</div><div class="card"><h3>Paid this month</h3>';
+if(T.paid.length<2)h+='<p class="mute">No payments in this month.</p>';T.paid.slice(1).forEach(function(x){h+='<div class="row"><span>'+esc(x[0])+'</span><b>'+inr(x[2])+'</b></div>'});
+h+='</div><div class="card"><h3>Fees due now</h3>';if(T.due.length<2)h+='<p class="mute">Nobody has fees due.</p>';
+T.due.slice(1).forEach(function(x){h+='<div class="row"><span>'+esc(x[0])+' <span class="chip red">'+x[3]+' days late</span></span><b>'+inr(x[2])+'</b></div>'});h+='</div>';
+var msg='Fee report · '+monthLabel(m)+' · '+cname()+'\nCollected: '+inr(D.tot)+'\nPending now: '+inr(D.pend)+' ('+D.due.length+' students)';
+sheet('Monthly report',h+'<button style="margin-bottom:8px" onclick="repXlsx(\''+m+'\')">Download Excel</button><button class="ghost" style="margin-bottom:8px" onclick="repPdf(\''+m+'\')">Save as PDF</button><a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent(msg)+'">Share summary on WhatsApp</a>')}
+function csvDownload(name,rows){var s='\ufeff'+rows.map(function(r){return r.map(function(c){return '"'+String(c==null?'':c).replace(/"/g,'""')+'"'}).join(',')}).join('\r\n');
+var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([s],{type:'text/csv;charset=utf-8'}));a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},800);toast('Downloaded '+name)}
+function xlsxDownload(name,sheets){if(!window.XLSX){csvDownload(name.replace(/\.xlsx$/,'.csv'),sheets[0].rows);toast('Excel tool could not load, so a CSV file was downloaded');return}
+var wb=XLSX.utils.book_new();sheets.forEach(function(sh){var ws=XLSX.utils.aoa_to_sheet(sh.rows);ws['!cols']=(sh.rows[0]||[]).map(function(){return {wch:20}});XLSX.utils.book_append_sheet(wb,ws,sh.name.replace(/[\[\]:*?\/\\]/g,' ').slice(0,31))});
+XLSX.writeFile(wb,name);toast('Downloaded '+name)}
+function repXlsx(m){var D=reportData(m),T=reportTables(D);xlsxDownload('report-'+m+'.xlsx',[{name:'Summary',rows:T.summary},{name:'By batch',rows:T.batch},{name:'Paid',rows:T.paid},{name:'Due now',rows:T.due}])}
+function printHtml(title,body){var css='body{font:14px Arial,Helvetica,sans-serif;color:#111;margin:18px}h1{font-size:20px;margin:0 0 2px}h2{font-size:15px;margin:18px 0 6px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #bbb;padding:5px 8px;text-align:left;font-size:13px}th{background:#eee}.m{color:#555;font-size:12px}',
+doc='<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+'</title><style>'+css+'</style></head><body>'+body+'</body></html>',w2=window.open('','_blank');
+if(w2){w2.document.open();w2.document.write(doc);w2.document.close();w2.focus();setTimeout(function(){w2.print()},600);toast('Choose Save as PDF in the print screen');return}
+var f=document.createElement('iframe');f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';document.body.appendChild(f);f.contentDocument.open();f.contentDocument.write(doc);f.contentDocument.close();setTimeout(function(){f.contentWindow.print();setTimeout(function(){f.remove()},3000)},600)}
+function repPdf(m){var D=reportData(m),T=reportTables(D),tbl=function(rows,money){return '<table><tr>'+rows[0].map(function(c){return '<th>'+esc(c)+'</th>'}).join('')+'</tr>'+rows.slice(1).map(function(r){return '<tr>'+r.map(function(c,i){return '<td>'+esc(money&&money.indexOf(i)>=0?inr(c):c)+'</td>'}).join('')+'</tr>'}).join('')+'</table>'};
+var body='<h1>'+esc(cname())+'</h1><div class="m">Fee report · '+esc(monthLabel(m))+'</div><h2>Summary</h2><table>'+T.summary.slice(2).map(function(r,i){return '<tr><td>'+esc(r[0])+'</td><td>'+esc(i<1||i===2?inr(r[1]):r[1])+'</td></tr>'}).join('')+'</table><h2>By batch</h2>'+tbl(T.batch,[2,3])+'<h2>Paid this month</h2>'+(T.paid.length>1?tbl(T.paid,[2]):'<p class="m">No payments.</p>')+'<h2>Fees due now</h2>'+(T.due.length>1?tbl(T.due,[2]):'<p class="m">Nobody has fees due.</p>')+'<p class="m" style="margin-top:18px">Generated on '+esc(dfmt(NOW))+' by ClassOrbitX</p>';
+printHtml('Fee report '+m,body)}
+function dataTables(){var nm={};allStud().forEach(function(s){nm[s.id]=s});var T={};
+T.students=[['Name','Parent','Parent phone','Batch','Status','Monthly fee','Joining date','Next due','Pending amount','Attendance %']];allStud().forEach(function(s){T.students.push([s.n,s.par,s.ph,bName(s.batchId),s.active===false?'Archived':'Active',s.monthly,s.join,s.nextDue,s.fee,s.att[1]?Math.round(s.att[0]/s.att[1]*100):''])});
+T.payments=[['Date','Student','Batch','Amount']];PAY.forEach(function(p){T.payments.push([p.paid_on,sName(p.student_id),bnOf(p.student_id),p.amount])});
+T.attendance=[['Date','Student','Batch','Status']];ATTR.forEach(function(r){T.attendance.push([r.day,sName(r.student_id),bnOf(r.student_id),r.present?'Present':'Absent'])});
+T.scores=[['Date','Student','Batch','Subject','Score','Total marks']];SCR.forEach(function(r){T.scores.push([r.test_date,sName(r.student_id),bnOf(r.student_id),r.subject||'',r.score,r.max_score||50])});
+T.enquiries=[['Child','Class','Referred by','Phone','Status']];ENQ.forEach(function(e){T.enquiries.push([e.n,e.cls,e.by,e.ph,e.st])});
+T.batches=[['Batch','Timing','Default monthly fee']];BATCHES.forEach(function(b){T.batches.push([b.name,b.timing||'',b.monthly_fee])});return T}
+function exportSheet(){sheet('Export data','<p class="mute" style="margin-bottom:8px">Download a copy of your data. Keep it in Drive or on your computer as a backup.</p><button style="margin-bottom:8px" onclick="exportXlsx()">All data (Excel)</button><button class="ghost" style="margin-bottom:8px" onclick="exportCsv(\'students\')">Students (CSV)</button><button class="ghost" style="margin-bottom:8px" onclick="exportCsv(\'payments\')">Payments (CSV)</button><button class="ghost" style="margin-bottom:8px" onclick="exportCsv(\'attendance\')">Attendance (CSV)</button><button class="ghost" style="margin-bottom:8px" onclick="exportCsv(\'scores\')">Test scores (CSV)</button><button class="ghost" onclick="exportCsv(\'enquiries\')">Enquiries (CSV)</button>')}
+function exportXlsx(){var T=dataTables();xlsxDownload('classorbitx-backup-'+today()+'.xlsx',[{name:'Students',rows:T.students},{name:'Payments',rows:T.payments},{name:'Attendance',rows:T.attendance},{name:'Test scores',rows:T.scores},{name:'Enquiries',rows:T.enquiries},{name:'Batches',rows:T.batches}])}
+function exportCsv(kind){var T=dataTables();csvDownload('classorbitx-'+kind+'-'+today()+'.csv',T[kind])}
+function ownerPrev3(){var keep=S,h;S=ALLS;try{h=ownerOld()}finally{S=keep}
+h=h.replace('<h2 style="margin-top:16px">Referral enquiries</h2>','<div class="grid" style="margin-top:12px"><button onclick="reportSheet()">Monthly report</button><button class="ghost" onclick="exportSheet()">Export data</button></div><button class="ghost" style="margin-top:10px" onclick="announceSheet()">Send announcement</button><h2 style="margin-top:16px">Referral enquiries</h2>');
+h=h.replace('onclick="postHW()">Post homework to all</button>','onclick="postHW()">Post homework</button><button class="ghost" style="margin-bottom:8px" onclick="hwCheck()">Homework check (done / not done)</button>');
+return h.replace('<h2 style="margin-top:16px">Students</h2>',batchSection()+'<h2 style="margin-top:16px">Students</h2>')+archSection()+installCard()}
+
+/* ===== New session: promote students to the next batch ===== */
+st.pr=null;st.undo=null;
+function chunk(a,n){var o=[];for(var i=0;i<a.length;i+=n)o.push(a.slice(i,i+n));return o}
+var _bsPrev=batchSection;
+batchSection=function(){return _bsPrev()+'<button class="ghost" style="margin-bottom:8px" onclick="promoteSheet()">New session (promote students)</button>'};
+function promoteSheet(keep){if(!keep||!st.pr)st.pr={map:{},fee:false};
+var ids=BATCHES.map(function(b){return b.id}).filter(function(id){return bStud(id).length});if(bStud('none').length)ids.push('none');
+if(!ids.length){toast('No students in any batch yet');return}
+var h='<p class="mute" style="margin-bottom:8px">Move whole batches to the next class in one go. Create the new batches first (Owner tab, Add batch). Nothing changes until you confirm, and you can undo right after.</p><button class="ghost" style="margin-bottom:10px" onclick="exportSheet()">Backup my data first (Export)</button><div class="card">';
+ids.forEach(function(id){var n=bStud(id).length,cur=st.pr.map[id]||id;
+h+='<label class="mute" for="ps_'+id+'">'+esc(id==='none'?'No batch':bName(id))+' ('+n+' students) moves to</label><select id="ps_'+id+'"><option value="'+id+'"'+(cur===id?' selected':'')+'>Stay where they are</option>';
+BATCHES.forEach(function(b){if(b.id!==id)h+='<option value="'+b.id+'"'+(cur===b.id?' selected':'')+'>'+esc(b.name)+'</option>'});
+if(id!=='none')h+='<option value="none"'+(cur==='none'?' selected':'')+'>No batch</option>';
+h+='<option value="__archive"'+(cur==='__archive'?' selected':'')+'>Archive (course finished)</option></select>'});
+h+='<label class="mute" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="pfee" style="width:20px;height:20px;margin:0"'+(st.pr.fee?' checked':'')+'> Also set the monthly fee to the new batch’s default fee</label></div>';
+sheet('New session',h+'<button onclick="promoteReview()">Review</button>')}
+function promoteReview(){var map={};BATCHES.map(function(b){return b.id}).concat(['none']).forEach(function(id){var el=$('ps_'+id);if(el&&el.value!==id)map[id]=el.value});
+st.pr.map=map;st.pr.fee=!!($('pfee')&&$('pfee').checked);var srcs=Object.keys(map);
+if(!srcs.length){toast('Nothing to move. Pick a new batch for at least one batch.');return}
+var h='<p class="mute" style="margin-bottom:8px">Untick any student who should stay, for example a child who repeats the class.</p>';
+srcs.forEach(function(src){var to=map[src];h+='<div class="card"><h3>'+esc(src==='none'?'No batch':bName(src))+' → '+esc(to==='__archive'?'Archive':(to==='none'?'No batch':bName(to)))+'</h3>';
+bStud(src).forEach(function(s){h+='<div class="row"><label for="pm_'+s.id+'">'+esc(s.n)+'</label><input type="checkbox" id="pm_'+s.id+'" checked style="width:22px;height:22px;margin:0"></div>'});h+='</div>'});
+sheet('Review',h+'<button style="margin-bottom:8px" onclick="promoteApply()">Apply</button><button class="ghost" onclick="promoteSheet(true)">Back</button>')}
+async function promoteApply(){var plan=[];Object.keys(st.pr.map).forEach(function(src){bStud(src).forEach(function(s){var el=$('pm_'+s.id);if(el&&el.checked)plan.push({s:s,to:st.pr.map[src]})})});
+if(!plan.length){toast('Select at least one student');return}
+if(!confirm('Move '+plan.length+' students? You can undo right after.'))return;
+var by={},q=[];plan.forEach(function(p){(by[p.to]=by[p.to]||[]).push(p.s.id)});
+Object.keys(by).forEach(function(to){var row=to==='__archive'?{active:false}:{batch_id:to==='none'?null:to};
+if(to!=='__archive'&&st.pr.fee){var b=bById(to);if(b&&b.monthly_fee)row.monthly_fee=b.monthly_fee}
+chunk(by[to],50).forEach(function(c){q.push(sb.from('students').update(row).in('id',c))})});
+st.undo=plan.map(function(p){return {id:p.s.id,batch_id:p.s.batchId||null,monthly_fee:p.s.monthly,active:true}});
+if(!(await w(q)))return;
+var h='<div class="card"><b class="num" style="font-size:24px">'+plan.length+' students moved</b><div class="mute" style="margin-top:6px">'+Object.keys(by).map(function(to){return by[to].length+' → '+esc(to==='__archive'?'Archive':(to==='none'?'No batch':bName(to)))}).join('<br>')+'</div></div><p class="mute" style="margin-bottom:8px">Their attendance, test and payment history stays with them. Check Fees and Attendance for the new batches.</p><button class="ghost" onclick="promoteUndo()">Undo this change</button>';
+st.pr=null;sheet('Done',h)}
+async function promoteUndo(){var u=st.undo;if(!u||!u.length){toast('Nothing to undo');return}
+var g={},q=[];u.forEach(function(x){var k=(x.batch_id||'')+'|'+x.monthly_fee;(g[k]=g[k]||{row:{batch_id:x.batch_id,monthly_fee:x.monthly_fee,active:true},ids:[]}).ids.push(x.id)});
+Object.keys(g).forEach(function(k){chunk(g[k].ids,50).forEach(function(c){q.push(sb.from('students').update(g[k].row).in('id',c))})});
+if(await w(q)){st.undo=null;closeSheet();toast('Change undone')}}
+
+/* ===== All students page and student profile page ===== */
+st.page=null;st.pd=null;st.q='';st.sb='all';st.ss='all';st.so='name';st.sy=0;
+function signOut(){st.page=null;st.pd=null;sb.auth.signOut()}
+function openPage(p){st.page=p;st.pd=null;st.sy=0;history.pushState({page:p},'');render();window.scrollTo(0,0)}
+function openStudent(id){st.sy=window.scrollY;st.page='student';st.pd=id;history.pushState({page:'student',id:id},'');render();window.scrollTo(0,0)}
+function closePage(){if(history.state&&history.state.page)history.back();else{st.page=null;st.pd=null;render()}}
+window.addEventListener('popstate',function(e){var s=e.state;st.page=s&&s.page?s.page:null;st.pd=s&&s.id?s.id:null;render()});
+function pageHtml(){return st.page==='student'?studentPage(st.pd):studentsPage()}
+function pageBar(title,right){return '<div style="display:flex;align-items:center;gap:10px;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding:8px 0;margin-bottom:6px;z-index:5"><button class="small ghost" onclick="closePage()">← Back</button><h2 style="margin:0;flex:1;font-size:19px">'+title+'</h2>'+(right||'')+'</div>'}
+function attPct(s){return s.att&&s.att[1]?Math.round(s.att[0]/s.att[1]*100):null}
+function stuFiltered(){var q=(st.q||'').trim().toLowerCase(),L=(st.ss==='archived'?ARCH:ALLS).filter(function(s){
+if(st.sb==='none'){if(s.batchId)return false}else if(st.sb!=='all'&&s.batchId!==st.sb)return false;
+if(st.ss==='due'&&!(s.fee>0))return false;if(st.ss==='clear'&&s.fee>0)return false;
+if(q&&(s.n+' '+s.par+' '+s.ph).toLowerCase().indexOf(q)<0)return false;return true});
+var by={name:function(a,b){return a.n.toLowerCase()<b.n.toLowerCase()?-1:1},due:function(a,b){return (b.fee>0)-(a.fee>0)||late(b)-late(a)||(a.n<b.n?-1:1)},att:function(a,b){var x=attPct(a),y=attPct(b);return (x===null?101:x)-(y===null?101:y)},join:function(a,b){return (a.join<b.join)-(a.join>b.join)}};
+return L.sort(by[st.so]||by.name)}
+function stuSummary(L){var d=L.filter(function(s){return s.fee>0});return L.length+' students · '+d.length+' fee due · '+inr(d.reduce(function(a,s){return a+s.fee},0))+' pending'}
+function stuRow(s){var p=attPct(s),t=s.sp&&s.sp.length?lastSc(s)+'%':'—';
+return '<div class="card" role="button" tabindex="0" style="cursor:pointer;margin-bottom:8px" onclick="openStudent(\''+s.id+'\')"><div class="row" style="border:0;margin:0;padding:0"><div><b>'+esc(s.n)+'</b> '+(s.active===false?'<span class="chip">Archived</span>':(s.fee>0?'<span class="chip red">Due</span>':'<span class="chip green">Clear</span>'))+'<div class="mute">'+esc(bName(s.batchId))+' · '+esc(s.par)+'</div></div><div style="text-align:right">'+(s.fee>0?'<b class="num">'+inr(s.fee)+'</b><div class="mute">'+late(s)+' days late</div>':'<div class="mute">Next due '+(s.nextDue?dfmt(s.nextDue):'—')+'</div>')+'</div></div><div class="mute" style="margin-top:6px">Attendance '+(p===null?'—':p+'%')+' · Last test '+t+'</div></div>'}
+function stuListHtml(){var L=stuFiltered();return L.length?L.map(stuRow).join(''):'<p class="mute">No students match.</p>'}
+function stuSearch(v){st.q=v;$('stulist').innerHTML=stuListHtml();$('stusum').textContent=stuSummary(stuFiltered())}
+function setStu(k,v){st[k]=v;render()}
+function studentsPage(){var h=pageBar('All students','<button class="small" onclick="addStudent()">+ Add</button>'),L=stuFiltered();
+h+='<input id="sq" type="search" placeholder="Search name, parent or phone" value="'+esc(st.q||'')+'" oninput="stuSearch(this.value)" style="margin-bottom:8px">';
+h+='<div class="chips">'+[['all','All'],['due','Fee due'],['clear','Clear'],['archived','Archived']].map(function(x){return '<button class="'+(st.ss===x[0]?'on':'')+'" onclick="setStu(\'ss\',\''+x[0]+'\')">'+x[1]+(x[0]==='archived'&&ARCH.length?' ('+ARCH.length+')':'')+'</button>'}).join('')+'</div>';
+if(BATCHES.length){h+='<div class="chips"><button class="'+(st.sb==='all'?'on':'')+'" onclick="setStu(\'sb\',\'all\')">All batches</button>'+BATCHES.map(function(b){return '<button class="'+(st.sb===b.id?'on':'')+'" onclick="setStu(\'sb\',\''+b.id+'\')">'+esc(b.name)+'</button>'}).join('')+'<button class="'+(st.sb==='none'?'on':'')+'" onclick="setStu(\'sb\',\'none\')">No batch</button></div>'}
+h+='<select aria-label="Sort" onchange="setStu(\'so\',this.value)">'+[['name','Sort: Name'],['due','Sort: Fee due first'],['att','Sort: Lowest attendance'],['join','Sort: Newest joined']].map(function(x){return '<option value="'+x[0]+'"'+(st.so===x[0]?' selected':'')+'>'+x[1]+'</option>'}).join('')+'</select>';
+return h+'<p class="mute" id="stusum" style="margin-bottom:8px">'+stuSummary(L)+'</p><div id="stulist">'+stuListHtml()+'</div>'}
+function studentPage(id){var s=sById(id);if(!s)return pageBar('Student')+'<p class="mute">This student was not found. They may have been deleted.</p>';
+var p=attPct(s),h=pageBar(esc(s.n)),r=function(l,v){return '<div class="row"><span class="mute">'+l+'</span><b>'+v+'</b></div>'};
+h+='<div style="margin-bottom:10px"><span class="chip">'+esc(bName(s.batchId))+'</span> '+(s.active===false?'<span class="chip">Archived</span>':(s.fee>0?'<span class="chip red">Fee due</span>':'<span class="chip green">Fees clear</span>'))+'</div>';
+h+='<div class="card"><h3>Parent</h3>'+r('Name',esc(s.par))+r('Phone','+'+esc(s.ph))+'<div style="display:flex;gap:8px;margin-top:10px"><a class="btn small" style="flex:1" href="tel:+'+esc(s.ph)+'">Call</a><a class="btn wa small" style="flex:1" target="_blank" rel="noopener" href="'+wa(s.ph,'Hello '+s.par+',')+'">WhatsApp</a></div><a class="btn ghost" style="margin-top:8px" target="_blank" rel="noopener" href="'+wa(s.ph,'Dear '+s.par+', you can see '+s.n+'’s attendance, homework and fees on ClassOrbitX: '+location.href.split('#')[0].split('?')[0]+' . Choose Parent and log in with this mobile number.')+'">Send app invite on WhatsApp</a></div>';
+var pays=PAY.filter(function(x){return x.student_id===id}).sort(function(a,b){return String(a.paid_on)<String(b.paid_on)?1:-1}).slice(0,8);
+h+='<div class="card"><h3>Fees</h3>'+r('Monthly fee',inr(s.monthly))+r('Joined',s.join?dfmt(s.join):'—')+r('Next due',s.nextDue?dfmt(s.nextDue):'—')+r('Pending',s.fee>0?inr(s.fee)+' · '+late(s)+' days late':'₹0')+(s.paidPart>0?r('Paid toward this month',inr(s.paidPart)):'');
+if(s.active!==false&&s.fee>0)h+='<div style="display:flex;gap:8px;margin-top:10px"><button class="small" style="flex:1" onclick="markPaid(\''+id+'\')">Paid</button><button class="small ghost" style="flex:1" onclick="partPay(\''+id+'\')">Part</button><a class="btn wa small" style="flex:1" target="_blank" rel="noopener" href="'+wa(s.ph,remindMsg(s))+'">Remind</a></div>';
+h+='<h3 style="margin-top:14px">Payments</h3>';if(!pays.length)h+='<p class="mute">No payments recorded yet.</p>';pays.forEach(function(x){h+=r(dfmt(x.paid_on),inr(x.amount))});h+='</div>';
+var ar=ATTR.filter(function(x){return x.student_id===id}).sort(function(a,b){return a.day<b.day?1:-1}).slice(0,10);
+h+='<div class="card"><h3>Attendance</h3>'+r('Overall',p===null?'—':p+'% ('+s.att[0]+' of '+s.att[1]+' days)');if(ar.length){h+='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">';ar.forEach(function(x){h+='<span class="chip'+(x.present?' green':' red')+'">'+dfmt(x.day)+' '+(x.present?'P':'A')+'</span>'});h+='</div>'}h+='</div>';
+var rows=s.srows||[],sp=s.sp||[];h+='<div class="card"><h3>Tests</h3>';
+if(!sp.length)h+='<p class="mute">No tests yet.</p>';else{h+='<div class="bars">';sp.slice(-6).forEach(function(v,i,a){var t=rows[rows.length-a.length+i];h+='<div class="c'+(i===a.length-1?' last':'')+'"><b>'+v+'</b><i style="height:'+Math.max(2,v)+'%"></i>'+esc(t&&t.subject?t.subject.slice(0,4):'T'+(rows.length-a.length+i+1))+'</div>'});h+='</div>';
+rows.slice(-4).reverse().forEach(function(t){h+=r(esc(t.subject||'Test')+' <span class="mute">'+dfmt(t.test_date)+'</span>',t.score+'/'+(t.max_score||50))})}h+='</div>';
+var hw=HWR.filter(function(x){return x.id&&(!x.batch_id||x.batch_id===s.batchId)}).slice(0,5);h+='<div class="card"><h3>Homework</h3>';
+if(!hw.length)h+='<p class="mute">No homework posted yet.</p>';hw.forEach(function(x){var st2=HWS.filter(function(y){return y.homework_id===x.id&&y.student_id===id})[0];h+='<div class="row"><span>'+esc(x.text.length>50?x.text.slice(0,50)+'…':x.text)+'</span>'+(st2?'<span class="chip'+(st2.done?' green':' red')+'">'+(st2.done?'✓ Done':'✗ Not done')+'</span>':'<span class="mute">—</span>')+'</div>'});h+='</div>';
+return h+'<button style="margin-bottom:8px" onclick="editFee(\''+id+'\')">Edit student</button>'+(s.active===false?'<button class="ghost" onclick="restoreSheet(\''+id+'\')">Restore student</button>':'<button class="ghost" onclick="archiveStudent(\''+id+'\')">Archive student (inactive)</button>')}
+var ownerPrev3Ref=null;
+
+function owner(){var h=ownerPrev3();if(!LOADED||!CENTRE)return h;
+h=h.replace('<div class="card"><div class="num">'+ALLS.length+'</div><div class="mute">Students</div></div>','').replace('<div class="grid">','<div class="grid" style="grid-template-columns:1fr">');
+var head='<h2 style="margin-top:16px">Students</h2>',i=h.indexOf(head),j=i<0?-1:h.indexOf('<button onclick="addStudent()"',i);
+if(i>=0&&j>i){var list=h.slice(i,j);h=h.slice(0,i)+'<button class="ghost" style="margin-bottom:8px" onclick="toggleStu()">'+(st.showStu?'Hide student list':'All students ('+ALLS.length+')')+'</button>'+(st.showStu?list:'')+h.slice(j)}
+return h}
+function toggleStu(){st.showStu=!st.showStu;render()}
+var _seedPrev=seedDemo;seedDemo=async function(){if(st.seeding||hasDemo()){toast('Demo students are already loaded');return}st.seeding=1;try{await _seedPrev()}finally{st.seeding=0}};
+
+/* ===== Announcement: one-tap group share, guided send-to-all, pick parents ===== */
+st.an=null;st.aq=null;
+function annMsg(g){return 'Dear '+g.par+',\n'+st.an.body+'\n\n— '+cname()}
+function annSend(){var body=$('am').value.trim(),b=$('ab').value;if(!body){toast('Write the message first');return}
+var L=ALLS.filter(function(s){return !b||s.batchId===b}),by={},order=[];if(!L.length){toast('No students in this batch');return}
+L.forEach(function(s){if(!by[s.ph]){by[s.ph]={ph:s.ph,par:s.par,kids:[]};order.push(by[s.ph])}by[s.ph].kids.push(s.n.split(' ')[0])});
+st.an={body:body,list:order,sent:{}};st.aq=null;annList()}
+function annList(){var A=st.an;if(!A)return;
+var h='<div class="card"><h3>Send once to a group</h3><p class="mute" style="margin:4px 0 10px">If this batch has a WhatsApp group or broadcast list, pick it in WhatsApp. One send reaches everyone.</p><a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent(A.body+'\n\n— '+cname())+'">Share to a WhatsApp group or list</a></div>';
+h+='<div class="card"><h3>Send to parents ('+A.list.length+')</h3><p class="mute" style="margin:4px 0 10px">WhatsApp opens one chat at a time. Guided mode moves to the next parent by itself when you come back.</p><button onclick="annGo()" style="margin-bottom:8px">Send to all selected (guided)</button><div style="display:flex;gap:8px;margin-bottom:6px"><button class="small ghost" onclick="annSel(true)">Select all</button><button class="small ghost" onclick="annSel(false)">Select none</button></div>';
+A.list.forEach(function(g,i){h+='<div class="row'+(A.sent[g.ph]?' sent':'')+'"><label style="display:flex;gap:10px;align-items:center;flex:1"><input type="checkbox" id="ac_'+i+'" checked style="width:22px;height:22px;margin:0"><span><b>'+esc(g.par)+'</b><div class="mute">'+esc(g.kids.join(', '))+'</div></span></label><a class="btn wa small" target="_blank" rel="noopener" href="'+wa(g.ph,annMsg(g))+'" onclick="annMark('+i+',this)">'+(A.sent[g.ph]?'Sent':'Send')+'</a></div>'});
+sheet('Send announcement',h+'</div>')}
+function annMark(i,el){st.an.sent[st.an.list[i].ph]=1;el.textContent='Sent';el.parentNode.classList.add('sent')}
+function annSel(v){st.an.list.forEach(function(g,i){var c=$('ac_'+i);if(c)c.checked=v})}
+function annGo(){var pick=[];st.an.list.forEach(function(g,i){var c=$('ac_'+i);if(c&&c.checked)pick.push(g)});if(!pick.length){toast('Select at least one parent');return}
+st.aq={list:pick,i:0,opened:false,done:0};annQueue()}
+function annQueue(){var q=st.aq;if(!q)return;
+if(q.i>=q.list.length){var n=q.done,t=q.list.length;st.aq=null;sheet('All done','<div class="card"><b class="num" style="font-size:24px">'+n+' of '+t+' chats opened</b><div class="mute" style="margin-top:6px">Open WhatsApp to confirm each message was sent.</div></div><button onclick="annList()">Back to the list</button>');return}
+var g=q.list[q.i];
+sheet('Parent '+(q.i+1)+' of '+q.list.length,'<div class="prog"><i style="width:'+Math.round(q.i/q.list.length*100)+'%"></i></div><div class="card" style="margin-top:12px"><b>'+esc(g.par)+'</b><div class="mute">'+esc(g.kids.join(', '))+'</div></div><p class="mute" style="margin-bottom:8px">Tap the green button, press Send in WhatsApp, then come back here. The next parent appears by itself.</p><a class="btn wa" target="_blank" rel="noopener" href="'+wa(g.ph,annMsg(g))+'" onclick="st.aq.opened=true">Open WhatsApp for '+esc(g.par)+'</a><div style="display:flex;gap:8px;margin-top:8px"><button class="ghost" onclick="annSkip(-1)">Back</button><button class="ghost" onclick="annSkip(1)">Skip</button><button class="ghost" onclick="annStop()">Stop</button></div>')}
+function annSkip(d){var q=st.aq;if(!q)return;q.i=Math.max(0,q.i+d);q.opened=false;annQueue()}
+function annStop(){st.aq=null;annList()}
+document.addEventListener('visibilitychange',function(){var q=st.aq;if(document.visibilityState!=='visible'||!q||!q.opened)return;
+if($('sbg').className.indexOf('open')<0){st.aq=null;return}
+q.opened=false;st.an.sent[q.list[q.i].ph]=1;q.done++;q.i++;annQueue()});
+(function(){if(!window.supabase){render();return}
+sb=supabase.createClient(SB_URL,SB_KEY);DB=sb;
+sb.auth.onAuthStateChange(function(ev,ses){if(ev==='PASSWORD_RECOVERY')st.recovery=1;USER=ses?ses.user:null;OWNER=!!(USER&&USER.email);LOADED=false;S=[];KIDS=[];st.tab=OWNER?'fees':'parent';render();if(USER)setTimeout(loadAll,0)});
+render()})();
+</script>
+</body>
+</html>
